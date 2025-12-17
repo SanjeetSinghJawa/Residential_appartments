@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solution Approved View</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f4f8; margin: 0; }
+        .container { background-color: #fff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; max-width: 500px; overflow: hidden; }
+        .header-approved { background-color: #28a745; color: white; padding: 15px 20px; display: flex; align-items: center; font-weight: bold; font-size: 0.9em; }
+        .header-approved .icon { margin-right: 10px; font-size: 1.2em; }
+        .content-section { padding: 20px; }
+        .selected-solution-title { font-size: 0.8em; color: #666; margin-bottom: 15px; }
+        .option-card { border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .option-card.selected { border-color: #007bff; background-color: #e6f2ff; }
+        .option-header { display: flex; justify-content: space-between; align-items: center; }
+        .option-title { font-weight: bold; color: #333; }
+        .chevron-icon { color: #aaa; }
+        .option-details { font-size: 0.8em; color: #666; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-approved">
+            <span class="icon">●</span>
+            Solution Approved (60%+)
+        </div>
+        <div class="content-section">
+            <p class="selected-solution-title">Selected Solution:</p>
+            <div class="option-card selected">
+                <div class="option-header">
+                    <div class="option-title">Fix the leaky pipe.</div>
+                    <span class="chevron-icon">v</span>
+                </div>
+                <div class="option-details">The leak will be repaired within 22 hours.</div>
+            </div>
+            <div class="option-card">
+                <div class="option-header">
+                    <div class="option-title">Replace the damaged section of the pipe</div>
+                    <span class="chevron-icon">v</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

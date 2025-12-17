@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residential Apartments Home</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f4f8; margin: 0; }
+        .login-container { background-color: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px; }
+        .header { display: flex; align-items: center; margin-bottom: 30px; }
+        .logo-placeholder { background-color: #007bff; width: 40px; height: 40px; border-radius: 5px; margin-right: 15px; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; font-size: 20px; }
+        .header-text h1 { font-size: 18px; font-weight: bold; margin: 0; color: #333; }
+        .header-text p { font-size: 14px; margin: 0; color: #666; }
+        .form-group { margin-bottom: 20px; }
+        .form-control { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        .select-group { display: flex; border: 1px solid #ddd; border-radius: 5px; }
+        .select-label { padding: 12px; background-color: #fff; color: #666; border-right: 1px solid #ddd; cursor: default; }
+        .form-select { flex-grow: 1; padding: 12px; border: none; background-color: transparent; appearance: none; font-size: 14px; }
+        .btn-primary { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        .btn-secondary { width: 100%; padding: 12px; background-color: #fff; color: #007bff; border: 1px solid #007bff; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; }
+        /* Specific styling for the home page button layout */
+        .home-buttons {
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically */
+            gap: 15px; /* Space between buttons */
+            margin-top: 30px;
+        }
+        .home-buttons a {
+            text-decoration: none; /* Remove default link underline */
+            display: block; /* Make links fill the button area */
+            text-align: center;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+        }
+        .login-link {
+            background-color: #007bff; /* Blue primary color */
+            color: white;
+        }
+        .signup-link {
+            background-color: #e9ecef; /* Light gray color */
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container"> <!-- Reuse the main container class -->
+        <div class="card"> <!-- Reuse the card styling -->
+            <div class="header">
+                <div class="logo-placeholder">A</div>
+                <div class="header-text">
+                    <h1>RESIDENTIAL</h1>
+                    <p>APARTMENTS</p>
+                </div>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <input type="email" name="email" id="email" class="form-control" placeholder="Email">
+                </div>
+                <div class="form-group">
+                    <input type="password" name="password" id="password" class="form-control" placeholder="Password">
+                </div>
+                
+                <button type="submit" class="btn-primary">Login</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

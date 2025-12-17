@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Interface</title>
+    <style>
+        /* Basic styling for the container and layout */
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f0f4f8; margin: 0; }
+        .voting-container { display: flex; width: 100%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden; }
+
+        /* Left sidebar styling (blue background) */
+        .sidebar { flex: 0 0 180px; background-color: #004a8b; color: white; padding: 20px; box-sizing: border-box; }
+        .sidebar h1 { font-size: 1.2em; margin-bottom: 20px; }
+        .image-placeholder { background-color: rgba(255, 255, 255, 0.1); border: 2px solid white; border-radius: 5px; height: 100px; width: 100%; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .image-placeholder img { width: 100%; height: auto; object-fit: cover; }
+
+        /* Right content area styling (white background) */
+        .main-content { flex-grow: 1; background-color: white; padding: 20px; }
+
+        /* Top status bar styling */
+        .status-bar { display: flex; align-items: center; margin-bottom: 30px; }
+        .checkbox-placeholder { width: 16px; height: 16px; border: 1px solid #ccc; border-radius: 3px; margin-right: 10px; }
+        .progress-indicator { flex-grow: 1; height: 8px; background-color: #eee; border-radius: 4px; overflow: hidden; }
+        .progress-fill-blue { width: 30%; height: 100%; background-color: #007bff; }
+
+        /* Main content section styling */
+        .vote-info { margin-bottom: 30px; }
+        .vote-title { font-size: 1em; color: #333; margin-bottom: 15px; }
+        .progress-bar-green { height: 12px; background-color: #eee; border-radius: 6px; overflow: hidden; margin-bottom: 10px; }
+        .progress-fill-green { width: 65%; height: 100%; background-color: #28a745; }
+        .approval-text { text-align: center; font-size: 1.5em; font-weight: bold; color: #333; }
+
+        /* Button section styling */
+        .button-group { display: flex; gap: 20px; }
+        .btn { flex: 1; padding: 15px; border: none; border-radius: 5px; font-size: 1em; font-weight: bold; cursor: pointer; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .btn-approve { background-color: #28a745; }
+        .btn-reject { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="voting-container">
+        <!-- Left Sidebar Section -->
+        <aside class="sidebar">
+            <h1>Voting</h1>
+            <div class="image-placeholder">
+                <!-- In a real scenario, you'd link your image here -->
+                <img src="placeholder-image.jpg" alt="Voting topic visual">
+            </div>
+        </aside>
+
+        <!-- Right Main Content Section -->
+        <main class="main-content">
+            <!-- Top Status Bar -->
+            <div class="status-bar">
+                <div class="checkbox-placeholder"></div>
+                <div class="progress-indicator">
+                    <div class="progress-fill-blue"></div>
+                </div>
+            </div>
+
+            <!-- Voting Information -->
+            <div class="vote-info">
+                <div class="vote-title">Residents Voting in Progress</div>
+                <div class="progress-bar-green">
+                    <div class="progress-fill-green"></div>
+                </div>
+                <div class="approval-text">65% Approval</div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button class="btn btn-approve">Approve</button>
+                <button class="btn btn-reject">Reject</button>
+            </div>
+        </main>
+    </div>
+    
+</body>
+</html>

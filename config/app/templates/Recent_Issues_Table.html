@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recent Issues Table</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; padding: 20px; }
+        .recent-issues-section h2 { font-size: 1.2em; margin-bottom: 15px; }
+        .issues-table { width: 100%; background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 0; text-align: left; border-bottom: 1px solid #ddd; }
+        th { color: #888; font-weight: normal; }
+        .status-badge { padding: 5px 10px; border-radius: 15px; font-size: 0.8em; font-weight: bold; }
+        .status-open { background-color: #e0f0ff; color: #007bff; }
+        .status-review { background-color: #fffbe6; color: #ffc107; }
+        .status-resolved { background-color: #e6ffec; color: #28a745; }
+    </style>
+</head>
+<body>
+    <section class="recent-issues-section">
+        <h2>Recent Issues</h2>
+        <div class="issues-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Issue</th>
+                        <th>Status</th>
+                        <th>Reported Date</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Leaking Pipe</td>
+                        <td><span class="status-badge status-open">Open</span></td>
+                        <td>Apr 1, 2021</td>
+                        <td>...</td>
+                    </tr>
+                    <tr>
+                        <td>Elevator Malfunction</td>
+                        <td><span class="status-badge status-review">In Review</span></td>
+                        <td>Apr 1, 2021</td>
+                        <td>...</td>
+                    </tr>
+                    <tr>
+                        <td>Parking Security Issue</td>
+                        <td><span class="status-badge status-resolved">Resolved</span></td>
+                        <td>Apr 1, 2021</td>
+                        <td>...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</body>
+</html>
