@@ -135,10 +135,9 @@
         
         /* The Notification Popup Modal/Sidebar */
         .notification-popup {
-            display: none; /* Hidden by default */
+           
             position: fixed; 
-            right: 0;
-            top: 0;
+          
             height: 100%;
             width: 350px;
             background-color: var(--card-bg);
@@ -285,6 +284,122 @@
         .status-open { background-color: #e0f0ff; color: var(--blue-badge); }
         .status-review { background-color: #fffbe6; color: var(--orange-badge); }
         .status-resolved { background-color: #e6ffec; color: var(--green-badge); }
+        tr[onclick]:hover {
+            background-color: #f9f9f9;
+        }
+        .notification-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6); /* Dark background overlay */
+            display: flex;
+            justify-content: center;
+            align-items: center; /* Centers the popup perfectly */
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 1000;
+        }
+
+        .notification-overlay.is-open {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* --- Popup Styling (Matching the Image) --- */
+        .notification-popup {
+            background: white;
+            padding: 20px;
+            border-radius: 12px; /* Rounded corners like the image */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px; /* Max width constraint */
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.95); /* Little pop effect */
+            transition: transform 0.3s ease-out;
+        }
+
+        .notification-overlay.is-open .notification-popup {
+            transform: scale(1);
+        }
+
+        .popup-header {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-btn {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+
+        /* --- Individual Item Styling --- */
+        .notification-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: #f9f9ff; /* Light blue background for unread/new */
+            border-radius: 8px;
+            margin-bottom: 10px;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .notification-item:hover {
+            background: #e9e9ff;
+        }
+
+        .notification-icon-box {
+            background: #007bff; /* Blue color from image */
+            color: white;
+            border-radius: 50%; /* Circular icon */
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex-grow: 1;
+        }
+
+        .notification-title {
+            font-weight: bold; /* Bold like the image */
+            margin: 0;
+            color: #333;
+        }
+
+        .notification-message {
+            margin: 4px 0 0 0;
+            color: #666; /* Lighter text color */
+            font-size: 0.9rem;
+        }
+
+        .notification-timestamp {
+            font-size: 0.8rem;
+            color: #999;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
@@ -304,7 +419,7 @@
                     <span class="nav-icon">📊</span> Dashboard
                 </a>
                 <a href="{% url 'report-issue' %}" class="nav-link">
-                    <span class="nav-icon">❗</span> Issues
+                    <span class="nav-icon">❗</span> Raise an Issues
                 </a>
                 <a href="#" class="nav-link">
                     <span class="nav-icon">🗳️</span> Voting
@@ -322,6 +437,9 @@
                 <a href="#" class="nav-link">
                     <span class="nav-icon">👤</span> Profile
                 </a>
+                <a href="{% url 'logout' %}" class="nav-link" style="color: #ff4d4d;">
+                    <span class="nav-icon">🚪</span> Logout
+                </a>
             </nav>
         </aside>
 
@@ -332,7 +450,7 @@
                 <div class="user-profile">
                     <!-- Placeholder avatar using initials or similar -->
                     <img src="via.placeholder.com" alt="User Avatar" class="user-avatar">
-                    <div class="welcome-text"><span>Welcome, **{{ user_full_name }}**</span> </div>
+                    <div class="welcome-text">Welcome, <span>{{ user_full_name }}</span></div>
                 </div>
                 <div class="header-icons">
                     <span class="header-icon-btn">🔍</span>
@@ -386,23 +504,28 @@
                             <tr>
                                 <th>Issue</th>
                                 <th>Status</th>
+                                <th>Reported By</th> <!-- NEW Column Header -->
                                 <th>Reported Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <!-- Loop through recent issues data -->
                             {% for issue in recent_issues %}
-                            <tr>
-                                <td>{{ issue.title }}</td>
-                                <td><span class="status-badge status-{{ issue.status|lower }}">
-                                    {{ issue.status }}
-                                </span></td>
-                                <td>{{ issue.reported_date|date:"M d, Y" }}</td>
-                            </tr>
+                                {% if issue.id %}
+                                    <tr onclick="window.location='{% url 'issue_details' issue.id %}'" style="cursor: pointer;">
+                                        <td>{{ issue.title }}</td>
+                                        <td><span class="status-badge status-{{ issue.status|lower }}">{{ issue.status }}</span></td>
+                                        <td>{{ issue.reported_by_id.full_name|default:issue.reported_by_id.email }}</td>
+                                        <td>{{ issue.reported_date|date:"M d, Y" }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3">Invalid issue data</td>
+                                    </tr>
+                                {% endif %}
                             {% empty %}
-                            <tr>
-                                <td colspan="3">No recent issues found.</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3">No issues found.</td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -412,33 +535,49 @@
     </div>
     
     <!-- Notification Popup Element -->
-    <div class="notification-popup" id="notificationPopup">
-        <div class="popup-header">
-            Notifications 
-            <span class="close-btn" onclick="toggleNotifications()">✕</span>
-        </div>
-        <div class="popup-content-scroll">
-            <!-- Django loop to populate notifications -->
-            {% for note in notifications %}
-                <div class="notification-item {% if 'New Issue' in note.title %}new-issue{% endif %}">
-                    <span class="notification-icon">!</span>
-                    <div class="notification-content">
-                        <p class="notification-title">{{ note.title }}</p>
-                        <p class="notification-message">{{ note.message }}</p>
+    <div class="notification-overlay" id="notificationOverlay">
+        <div class="notification-popup" id="notificationPopup">
+            <div class="popup-header">
+                Notifications 
+                <span class="close-btn" onclick="toggleNotifications()">✕</span>
+            </div>
+            <div class="popup-content-scroll">
+                {% for note in notifications %}
+                    {% if note.issue %}
+                    <a href="{% url 'issue_details' note.issue.id %}" class="notification-item">
+                        <div class="notification-icon-box">!</div>
+                        <div class="notification-content">
+                            <p class="notification-title">{{ note.title }}</p>
+                            <p class="notification-message">{{ note.message }}</p>
+                            <p class="notification-message">Reported by: {{ note.issue.reported_by_id.full_name|default:note.issue.reported_by_id.email }}</p>
+                        </div>
+                        <!-- Use the custom time_since_created method from models.py -->
+                        <span class="notification-timestamp">{{ note.time_since_created }}</span>
+                    </a>
+                    {% else %}
+                     <div class="notification-item">
+                         <div class="notification-icon-box">!</div>
+                        <div class="notification-content">
+                            <p class="notification-title">{{ note.title }}</p>
+                            <p class="notification-message">{{ note.message }}</p>
+                            <p class="notification-message">Reported by: {{ note.issue.reported_by_id.full_name|default:note.issue.reported_by_id.email }}</p>
+                        </div>
+                        <span class="notification-timestamp">{{ note.time_since_created }}</span>
                     </div>
-                    <span class="notification-time">{{ note.time_since_created }}</span>
-                </div>
-            {% empty %}
-                <p>No new notifications.</p>
-            {% endfor %}
+                    {% endif %}
+                {% empty %}
+                    <p>No new notifications.</p>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
+    
     <!-- JavaScript to handle the popup toggle -->
     <script>
         function toggleNotifications() {
-            const popup = document.getElementById('notificationPopup');
-            popup.classList.toggle('is-open');
+            const overlay = document.getElementById('notificationOverlay');
+            overlay.classList.toggle('is-open');
         }
     </script>
 

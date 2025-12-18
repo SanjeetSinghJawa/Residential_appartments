@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import redirect
@@ -8,20 +8,28 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 
 def signup(request):
-
-    template= "Signup_Form.html"
+    template = "Signup_Form.html"
     if request.method == 'POST':
-        
+        full_name = request.POST.get('full_name')
         email = request.POST.get('email')
         password = request.POST.get('password')
         flat_number = request.POST.get('flat_number')
-        role = request.POST.get('flat_number')
+        role = request.POST.get('role')
 
-       
-        create_user = UserDetails.objects.create(email=email, password=password, flat_number=flat_number, role=role)
-        create_user.save()
-        return HttpResponse("User created successfully")
+        if UserDetails.objects.filter(email=email).exists():
+            return render(request, template, {'error': "Email already registered."})
+
+        UserDetails.objects.create(
+            full_name=full_name, email=email, password=password, 
+            flat_number=flat_number, role=role
+        )
+        return redirect('login')
     return render(request, template)
+
+# NEW: Logout functionality
+def logout(request):
+    request.session.flush() # Clears session data and logs the user out
+    return redirect('login')
 
 def login(request):
     template = "Login_Form.html"
@@ -39,10 +47,10 @@ def login(request):
             
             return redirect('home')
         except UserDetails.DoesNotExist:
-            return HttpResponse("Invalid credentials")
+            return render(request, template, {'error': "Invalid email or password. Please try again."})
     return render(request, template)
 
-@login_required
+
 def reportIssue(request):
     template = "Raise_an_Issue_Form.html"
     
@@ -63,10 +71,11 @@ def reportIssue(request):
             status=status,
             reported_by_id= user_id #equest.user #Automatically assign the currently logged-in user
         )
-        # *NEW*: Create a site-wide notification for the new issue
+         # NEW: Create a site-wide notification and link it to the new issue object
         SiteNotification.objects.create(
             title="New Issue Raised",
-            message=f"{title}: {description[:50]}..."
+            message=f"{title}: {description[:50]}...",
+            issue=new_issue # Link the notification directly to the Issue object
         )
         # Save the instance to the database
         new_issue.save()
@@ -80,38 +89,30 @@ def reportIssue(request):
     # If it's a GET request, just render the template
     return render(request, template)
 
-@login_required
+def issue_details_view(request, issue_id):
+    # Fetch the specific issue by its ID (Djongo/MongoDB _id)
+    issue = get_object_or_404(Issue, id=issue_id)
+    return render(request, 'Issue_Details_View.html', {'issue': issue})
+
+
 def home(request):
     user_id = request.session.get('user_id')
-    
     if user_id:
         try:
-            # Fetch the user details using the ID from the session
             user = UserDetails.objects.get(id=user_id)
-    
-            # Calculate summary statistics
-            open_issues_count = Issue.objects.filter(status='Open').filter(reported_by_id=user).count()
-            resolved_issues_count = Issue.objects.filter(status='Resolved').filter(reported_by_id=user).count()
-            pending_votes_count = 3 # Static placeholder for now
-
-            # Get recent issues to display in the table
-            #recent_issues = Issue.objects.order_by('-reported_date')[:5] # Get last 5
-            recent_issues = Issue.objects.filter(reported_by_id=user)
-
-            # *NEW*: Fetch all notifications
-            all_notifications = SiteNotification.objects.all()[:10] # Get recent 10
+            open_issues_count = Issue.objects.filter(status='Open', reported_by_id=user).count()
+            resolved_issues_count = Issue.objects.filter(status='Resolved', reported_by_id=user).count()
+            recent_issues = Issue.objects.filter(reported_by_id=user).order_by('-reported_date')[:5]
+            all_notifications = SiteNotification.objects.all().order_by('-id')[:10]
 
             context = {
-                'user_full_name': user.email,  # Assuming email as identifier
+                'user_full_name': user.full_name or user.email,
                 'open_issues_count': open_issues_count,
                 'resolved_issues_count': resolved_issues_count,
-                'pending_votes_count': pending_votes_count,
                 'recent_issues': recent_issues,
-                'notifications': all_notifications, # Add to context
+                'notifications': all_notifications,
             }
             return render(request, 'home.html', context)
         except UserDetails.DoesNotExist:
             return redirect('login')
-    else:
-        # If no user_id in session, the user is not "logged in"
-        return redirect('login')
+    return redirect('login')

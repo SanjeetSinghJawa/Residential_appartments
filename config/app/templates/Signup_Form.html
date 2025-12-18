@@ -165,6 +165,13 @@
         </div>
         <form method="post">
             {% csrf_token %}
+            {% if error %}
+                <div class="error-msg" style="color: red; margin-bottom: 10px;">{{ error }}</div>
+            {% endif %}
+            <div class="form-group">
+                <!-- ADDED: Full Name Input -->
+                <input type="text" name="full_name" id="full_name" class="form-control" placeholder="Full Name" required>
+            </div>
             <div class="form-group">
                 <input type="email" name="email" id="email" class="form-control" placeholder="Email Address" required>
             </div>
@@ -185,10 +192,8 @@
             </div>
             
             <div class="btn-stack">
-                <!-- If this is a login page, the main action should be Submit -->
-                
-                <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
                 <button type="submit" class="btn btn-secondary">Create Account</button>
+                <a href="{% url 'login' %}" class="btn btn-primary">Back to Login</a>
             </div>
         </form>
     </div>

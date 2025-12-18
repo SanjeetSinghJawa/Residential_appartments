@@ -21,11 +21,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('login/', views.login, name='login'),
     path('', views.signup, name='signup'),
+    path('signup/', views.signup, name='signup'),
+    path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout'),
     path('home/', views.home, name='home'),
-    # New URL for reporting an issue
     path('report-issue/', views.reportIssue, name='report-issue'),
+    path('issue/<str:issue_id>/', views.issue_details_view, name='issue_details'),
     path('admin/', admin.site.urls),
 ]
 

@@ -20,18 +20,21 @@
     <div class="details-container">
         <div class="details-header">
             Issue Details
+            <a href="{% url 'home' %}" style="float: right; font-size: 0.8em; text-decoration: none; color: #007bff;">Back</a>
         </div>
         <div class="details-content">
             <div class="issue-title-bar">
-                <div class="issue-title">Leaking Pipe</div>
-                <div class="status-badge">Selecting</div>
+                <!-- Dynamic title and status -->
+                <div class="issue-title">{{ issue.title }}</div>
+                <div class="status-badge">{{ issue.status }}</div>
             </div>
             <p class="issue-description">
-                Water leaking from the kitchen sink area. Needs urgent repair.
+                {{ issue.description }}
             </p>
         </div>
-        <!-- Placeholder image source -->
-        <img src="placeholder-pipe-image.jpg" alt="Leaking kitchen pipe" class="issue-image">
+        {% if issue.image %}
+            <img src="{{ issue.image.url }}" alt="{{ issue.title }}" class="issue-image">
+        {% endif %}
     </div>
 </body>
 </html>
