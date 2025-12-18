@@ -18,6 +18,7 @@
             --blue-badge: #007bff;
             --green-badge: #28a745;
             --orange-badge: #ffc107;
+            --notification-count-bg: #dc3545; /* Red for new notifications */
         }
 
         body { 
@@ -55,12 +56,14 @@
         .nav-link { 
             display: flex; 
             align-items: center; 
+            justify-content: space-between; /* Align items with space between them */
             padding: 12px 15px; 
             color: #aaa; 
             text-decoration: none; 
             margin-bottom: 10px; 
             border-radius: 5px;
             transition: background-color 0.3s, color 0.3s;
+            position: relative;
         }
         .nav-link.active, .nav-link:hover { 
             color: white; 
@@ -105,13 +108,108 @@
             gap: 20px; 
             color: var(--text-light);
         }
-        .header-icons span {
+        .header-icon-btn { 
             cursor: pointer;
             transition: color 0.3s;
+            position: relative; /* Needed for positioning the badge */
         }
-        .header-icons span:hover {
+        .header-icon-btn:hover {
             color: var(--primary-color);
         }
+
+        /* --- Notification Specific Styling --- */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -10px;
+            background-color: var(--notification-count-bg);
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        .nav-link .notification-badge {
+            right: 10px;
+        }
+        
+        /* The Notification Popup Modal/Sidebar */
+        .notification-popup {
+            display: none; /* Hidden by default */
+            position: fixed; 
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 350px;
+            background-color: var(--card-bg);
+            box-shadow: -4px 0 15px rgba(0,0,0,0.15);
+            z-index: 1000;
+            flex-direction: column;
+        }
+        .notification-popup.is-open {
+            display: flex;
+        }
+        .popup-header {
+            padding: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-btn {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+        .popup-content-scroll {
+            padding: 20px;
+            overflow-y: auto; /* Allows scrolling if many notifications */
+            flex-grow: 1;
+        }
+
+        /* Styling for individual notification items (reused from previous CSS) */
+        .notification-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+        }
+        .notification-item.new-issue {
+            background-color: #e0f0ff; 
+            border-color: var(--blue-badge);
+        }
+        .notification-icon {
+            font-size: 1.5rem;
+            color: var(--blue-badge);
+            margin-right: 15px;
+        }
+        .notification-content {
+            flex-grow: 1;
+        }
+        .notification-title {
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+        .notification-message {
+            color: #666;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        .notification-time {
+            font-size: 0.8rem;
+            color: #999;
+            white-space: nowrap;
+            margin-left: 15px;
+        }
+
+        /* --- Rest of existing CSS for cards/table --- */
         .summary-cards { 
             display: grid; 
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -187,11 +285,6 @@
         .status-open { background-color: #e0f0ff; color: var(--blue-badge); }
         .status-review { background-color: #fffbe6; color: var(--orange-badge); }
         .status-resolved { background-color: #e6ffec; color: var(--green-badge); }
-        .sidebar-link {
-            color: inherit; /* Inherit color from parent nav-link */
-            text-decoration: none;
-            display: contents; /* Ensures the whole link area is clickable */
-        }
     </style>
 </head>
 <body>
@@ -210,15 +303,21 @@
                 <a href="#" class="nav-link active">
                     <span class="nav-icon">📊</span> Dashboard
                 </a>
-                <!-- Corrected link structure -->
                 <a href="{% url 'report-issue' %}" class="nav-link">
                     <span class="nav-icon">❗</span> Issues
                 </a>
                 <a href="#" class="nav-link">
                     <span class="nav-icon">🗳️</span> Voting
                 </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-icon">🔔</span> Notifications
+                <!-- Sidebar Notification Link -->
+                <!-- Use JS function toggleNotifications() to open/close the popup -->
+                <a href="#" class="nav-link" onclick="event.preventDefault(); toggleNotifications();">
+                    <span class="nav-icon">🔔</span> 
+                    Notifications
+                    <!-- Notification Badge in Sidebar -->
+                    {% if notifications|length > 0 %}
+                        <span class="notification-badge">{{ notifications|length }}</span>
+                    {% endif %}
                 </a>
                 <a href="#" class="nav-link">
                     <span class="nav-icon">👤</span> Profile
@@ -232,14 +331,22 @@
             <header class="header">
                 <div class="user-profile">
                     <!-- Placeholder avatar using initials or similar -->
-                    <img src="via.placeholder.com" alt="Sarah Miller" class="user-avatar">
-                    <div class="welcome-text"><span>Welcome, {{ user_full_name }}</span> </div>
+                    <img src="via.placeholder.com" alt="User Avatar" class="user-avatar">
+                    <div class="welcome-text"><span>Welcome, **{{ user_full_name }}**</span> </div>
                 </div>
                 <div class="header-icons">
-                    <span>🔍</span>
-                    <span>✉️</span>
-                    <span>🔔</span>
-                    <span>⚙️</span>
+                    <span class="header-icon-btn">🔍</span>
+                    <span class="header-icon-btn">✉️</span>
+                    <!-- Header Notification Button -->
+                    <!-- Use JS function toggleNotifications() to open/close the popup -->
+                    <span class="header-icon-btn" onclick="toggleNotifications()">
+                        🔔
+                        <!-- Notification Badge in Header Icons -->
+                        {% if notifications|length > 0 %}
+                            <span class="notification-badge">{{ notifications|length }}</span>
+                        {% endif %}
+                    </span>
+                    <span class="header-icon-btn">⚙️</span>
                 </div>
             </header>
 
@@ -267,6 +374,8 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- Removed the old inline notification container from main content -->
 
             <!-- Recent Issues Table -->
             <section class="recent-issues-section">
@@ -301,6 +410,37 @@
             </section>
         </main>
     </div>
+    
+    <!-- Notification Popup Element -->
+    <div class="notification-popup" id="notificationPopup">
+        <div class="popup-header">
+            Notifications 
+            <span class="close-btn" onclick="toggleNotifications()">✕</span>
+        </div>
+        <div class="popup-content-scroll">
+            <!-- Django loop to populate notifications -->
+            {% for note in notifications %}
+                <div class="notification-item {% if 'New Issue' in note.title %}new-issue{% endif %}">
+                    <span class="notification-icon">!</span>
+                    <div class="notification-content">
+                        <p class="notification-title">{{ note.title }}</p>
+                        <p class="notification-message">{{ note.message }}</p>
+                    </div>
+                    <span class="notification-time">{{ note.time_since_created }}</span>
+                </div>
+            {% empty %}
+                <p>No new notifications.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- JavaScript to handle the popup toggle -->
+    <script>
+        function toggleNotifications() {
+            const popup = document.getElementById('notificationPopup');
+            popup.classList.toggle('is-open');
+        }
+    </script>
 
 </body>
 </html>

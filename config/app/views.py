@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import redirect
-from .models import user_details, Issue
+from .models import UserDetails, Issue, SiteNotification
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -18,7 +18,7 @@ def signup(request):
         role = request.POST.get('flat_number')
 
        
-        create_user = user_details.objects.create(email=email, password=password, flat_number=flat_number, role=role)
+        create_user = UserDetails.objects.create(email=email, password=password, flat_number=flat_number, role=role)
         create_user.save()
         return HttpResponse("User created successfully")
     return render(request, template)
@@ -31,14 +31,14 @@ def login(request):
         
         try:
             # Match user by credentials
-            user = user_details.objects.get(email=email, password=password)
+            user = UserDetails.objects.get(email=email, password=password)
             
             # FIX: Explicitly set the session and save it
             request.session['user_id'] = user.id
             request.session.modified = True 
             
             return redirect('home')
-        except user_details.DoesNotExist:
+        except UserDetails.DoesNotExist:
             return HttpResponse("Invalid credentials")
     return render(request, template)
 
@@ -54,15 +54,20 @@ def reportIssue(request):
         
         # NOTE: You need to handle file uploads separately if you add an ImageField
         # image_file = request.FILES.get('image') 
-
+        user_id = UserDetails.objects.get(id=request.session.get('user_id'))
+        #return HttpResponse(f"request.user: {request.user}, user_id from session: {user_id}")
         # Create a new Issue instance
         new_issue = Issue.objects.create(
             title=title,
             description=description,
             status=status,
-            reported_by=request.user # Automatically assign the currently logged-in user
+            reported_by_id= user_id #equest.user #Automatically assign the currently logged-in user
         )
-        
+        # *NEW*: Create a site-wide notification for the new issue
+        SiteNotification.objects.create(
+            title="New Issue Raised",
+            message=f"{title}: {description[:50]}..."
+        )
         # Save the instance to the database
         new_issue.save()
         
@@ -82,15 +87,19 @@ def home(request):
     if user_id:
         try:
             # Fetch the user details using the ID from the session
-            user = user_details.objects.get(id=user_id)
+            user = UserDetails.objects.get(id=user_id)
     
             # Calculate summary statistics
-            open_issues_count = Issue.objects.filter(status='Open').count()
-            resolved_issues_count = Issue.objects.filter(status='Resolved').count()
+            open_issues_count = Issue.objects.filter(status='Open').filter(reported_by_id=user).count()
+            resolved_issues_count = Issue.objects.filter(status='Resolved').filter(reported_by_id=user).count()
             pending_votes_count = 3 # Static placeholder for now
 
             # Get recent issues to display in the table
-            recent_issues = Issue.objects.order_by('-reported_date')[:5] # Get last 5
+            #recent_issues = Issue.objects.order_by('-reported_date')[:5] # Get last 5
+            recent_issues = Issue.objects.filter(reported_by_id=user)
+
+            # *NEW*: Fetch all notifications
+            all_notifications = SiteNotification.objects.all()[:10] # Get recent 10
 
             context = {
                 'user_full_name': user.email,  # Assuming email as identifier
@@ -98,9 +107,10 @@ def home(request):
                 'resolved_issues_count': resolved_issues_count,
                 'pending_votes_count': pending_votes_count,
                 'recent_issues': recent_issues,
+                'notifications': all_notifications, # Add to context
             }
             return render(request, 'home.html', context)
-        except user_details.DoesNotExist:
+        except UserDetails.DoesNotExist:
             return redirect('login')
     else:
         # If no user_id in session, the user is not "logged in"
