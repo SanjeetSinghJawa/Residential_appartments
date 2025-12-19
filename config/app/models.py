@@ -12,7 +12,7 @@ class UserDetails(models.Model):
 
     def __str__(self):
         return self.full_name if self.full_name else self.email
-
+    
 class Issue(models.Model):
     STATUS_CHOICES = [
         ('Open', 'Open'),
@@ -28,6 +28,21 @@ class Issue(models.Model):
 
     def __str__(self):
         return self.title
+    
+class Solution(models.Model):
+    title = models.CharField(max_length=150)
+    description = models.TextField()
+    # Link back to the issue it solves
+    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='solutions')
+    # Link back to the user who suggested it
+    suggested_by = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
+    upvotes = models.IntegerField(default=0)
+    downvotes = models.IntegerField(default=0)
+    suggested_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=50, default='Suggested') # e.g., Suggested, In Progress, Accepted
+
+    def __str__(self):
+        return f"{self.title} for Issue: {self.issue.title}"
     
 # New model for site-wide notifications
 class SiteNotification(models.Model):

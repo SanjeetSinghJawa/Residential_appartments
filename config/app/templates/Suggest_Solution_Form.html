@@ -1,0 +1,26 @@
+<!-- Suggest_Solution_Form.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Suggest a Solution</title>
+    <!-- Add your CSS links here or style block -->
+</head>
+<body>
+    <div class="form-container">
+        <h1>Suggesting Solution for: {{ issue.title }}</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="title">Solution Title</label>
+                <input type="text" name="title" id="title" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Details/Steps</label>
+                <textarea name="description" id="description" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Submit Solution</button>
+            <a href="{% url 'issue_details' issue.id %}">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

@@ -56,7 +56,6 @@
         .nav-link { 
             display: flex; 
             align-items: center; 
-            justify-content: space-between; /* Align items with space between them */
             padding: 12px 15px; 
             color: #aaa; 
             text-decoration: none; 
@@ -130,7 +129,8 @@
             font-weight: bold;
         }
         .nav-link .notification-badge {
-            right: 10px;
+            right: 165px;
+            top: 5px;
         }
         
         /* The Notification Popup Modal/Sidebar */
@@ -427,12 +427,14 @@
                 <!-- Sidebar Notification Link -->
                 <!-- Use JS function toggleNotifications() to open/close the popup -->
                 <a href="#" class="nav-link" onclick="event.preventDefault(); toggleNotifications();">
+                    
                     <span class="nav-icon">🔔</span> 
-                    Notifications
-                    <!-- Notification Badge in Sidebar -->
-                    {% if notifications|length > 0 %}
-                        <span class="notification-badge">{{ notifications|length }}</span>
+                     <!-- Notification Badge in Sidebar -->
+                     {% if notifications|length > 0 %}
+                     <span class="notification-badge">{{ notifications|length }}</span>
                     {% endif %}
+                   
+                    Notifications
                 </a>
                 <a href="#" class="nav-link">
                     <span class="nav-icon">👤</span> Profile

@@ -2,10 +2,23 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import redirect
-from .models import UserDetails, Issue, SiteNotification
+from .models import Solution, UserDetails, Issue, SiteNotification
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Count
+from django.db.models import F
+
+def vote_solution(request, solution_id, vote_type):
+    solution = get_object_or_404(Solution, id=solution_id)
+    
+    if vote_type == 'upvote':
+        solution.upvotes = F('upvotes') + 1
+    elif vote_type == 'downvote':
+        # You can either decrease a total or increase a separate downvote field
+        solution.downvotes = F('downvotes') + 1 
+        
+    solution.save()
+    return redirect('issue_details', issue_id=solution.issue.id)
 
 def signup(request):
     template = "Signup_Form.html"
@@ -90,10 +103,34 @@ def reportIssue(request):
     return render(request, template)
 
 def issue_details_view(request, issue_id):
-    # Fetch the specific issue by its ID (Djongo/MongoDB _id)
     issue = get_object_or_404(Issue, id=issue_id)
-    return render(request, 'Issue_Details_View.html', {'issue': issue})
+    # Fetch all solutions related to this issue
+    solutions = Solution.objects.filter(issue=issue).order_by('-upvotes', '-suggested_date')
+    
+    return render(request, 'Issue_Details_View.html', {
+        'issue': issue,
+        'solutions': solutions # Pass solutions to the template
+    })
 
+
+def suggest_solution(request, issue_id):
+    issue = get_object_or_404(Issue, id=issue_id)
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        description = request.POST.get('description')
+        user_id = request.session.get('user_id')
+        user = get_object_or_404(UserDetails, id=user_id)
+
+        Solution.objects.create(
+            title=title,
+            description=description,
+            issue=issue,
+            suggested_by=user,
+        )
+        # Redirect back to the issue details page
+        return redirect('issue_details', issue_id=issue_id)
+
+    return render(request, 'Suggest_Solution_Form.html', {'issue': issue})
 
 def home(request):
     user_id = request.session.get('user_id')
