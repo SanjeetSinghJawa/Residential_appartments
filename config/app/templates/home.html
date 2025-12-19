@@ -252,7 +252,7 @@
             color: var(--secondary-color);
         }
         .issues-table { 
-            width: 100%; 
+            width: 96%; 
             background-color: var(--card-bg); 
             padding: 20px; 
             border-radius: 10px; 
@@ -400,6 +400,171 @@
             right: 15px;
             text-align: right;
         }
+        .progress-track {
+            height: 8px;
+            width: 100%;
+            background-color: #e0e0e0; /* The grey background */
+            border-radius: 10px;
+            margin-top: 15px; /* Space between the number and the bar */
+            overflow: hidden; /* Clips the inner bar to the rounded corners */
+        }
+
+        /* The colored fill */
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.6s ease; /* Smooth animation when page loads */
+        }
+
+        /* Color definitions */
+        .blue { background-color: var(--blue-badge); }
+        .green { background-color: var(--green-badge); }
+        .orange { background-color: var(--orange-badge); }
+
+        /* Ensure the card value and number look clean */
+        .card-value {
+            font-size: 2.2em;
+            font-weight: bold;
+            display: block; /* Stack the number and the bar vertically */
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between; /* Pushes title to left, count to right */
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        /* Make title look like an H2 */
+        .card-title-h2 {
+            font-size: 1.5em; /* H2 standard size */
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        /* Style for the count on the right */
+        .card-count {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* The grey track remains full width below the header */
+        .progress-track {
+            height: 8px;
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 10px;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline; /* Aligns title text with the bottom of the big number */
+            margin-bottom: 10px;
+        }
+
+        /* Title styling */
+        .card-title-h2 {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        /* Big Number styling - taking "complete height" relative to the header */
+        .card-count {
+            font-size: 3.5em; /* Significantly larger */
+            font-weight: 800;
+            line-height: 1;  /* Removes extra padding around the number */
+        }
+
+        /* Color Alignment for the numbers */
+        .text-blue { color: var(--blue-badge); }
+        .text-green { color: var(--green-badge); }
+        .text-orange { color: var(--orange-badge); }
+
+        /* Progress bar track */
+        .progress-track {
+            height: 10px;
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        /* The main container inside the card */
+        .card-body-flex {
+            display: flex;
+            align-items: stretch; /* Forces both sides to be the same height */
+            gap: 15px;
+        }
+
+        /* Left side: 70% width */
+        .card-left {
+            flex: 0 0 70%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Centers title and bar vertically */
+        }
+
+        /* Right side: 30% width */
+        .card-right {
+            flex: 0 0 30%;
+            display: flex;
+            align-items: center;    /* Vertical center of number */
+            justify-content: center; /* Horizontal center of number */
+            border-left: 1px solid #eee; /* Optional: subtle divider */
+        }
+
+        /* Typography and Bar adjustments */
+        .card-title-h2 {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin: 0 0 10px 0;
+        }
+
+        .card-count-huge {
+            font-size: 4em; /* Maximum impact */
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .progress-track {
+            height: 8px;
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        /* Color Alignment */
+        .text-blue { color: var(--blue-badge); }
+        .text-green { color: var(--green-badge); }
+        .text-orange { color: var(--orange-badge); }
+        /* Make the entire table header background grey */
+        .issues-table thead {
+            background-color: #f7f7f7; /* A light grey background */
+        }
+
+        /* Style for individual header cells (th) */
+        .issues-table th {
+            color: var(--text-color); /* Uses the main text color for contrast */
+            font-weight: bold;       /* Make the text bold */
+            text-transform: uppercase;
+            font-size: 0.9em;        /* Slightly larger font size than default small */
+            padding: 15px 20px;      /* Added padding to top/bottom for height */
+        }
+
+        /* Ensure data cells also have consistent padding */
+        .issues-table td {
+            padding: 15px 20px;
+        }
     </style>
 </head>
 <body>
@@ -451,7 +616,8 @@
             <header class="header">
                 <div class="user-profile">
                     <!-- Placeholder avatar using initials or similar -->
-                    <img src="via.placeholder.com" alt="User Avatar" class="user-avatar">
+                    <!-- <img src="via.placeholder.com" alt="User Avatar" class="user-avatar"> -->
+                    <span>&#128100;</span> <hr><hr>
                     <div class="welcome-text">Welcome, <span>{{ user_full_name }}</span></div>
                 </div>
                 <div class="header-icons">
@@ -471,29 +637,52 @@
             </header>
 
             <!-- Summary Cards -->
-            <section class="summary-cards">
+            <div class="summary-cards"> 
+                <!-- Open Issues Card -->
                 <div class="card">
-                    <div class="card-title">Open Issues</div>
-                    <div class="card-value">
-                        {{ open_issues_count }}
-                        <div class="progress-bar blue" style="width: 50%;"></div>
+                    <div class="card-body-flex">
+                        <div class="card-left">
+                            <h2 class="card-title-h2">Open Issues</h2>
+                            <div class="progress-track">
+                                <div class="progress-fill blue" style="width: {{ card_open_pct }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="card-right">
+                            <div class="card-count-huge text-blue">{{ card_open_count }}</div>
+                        </div>
                     </div>
                 </div>
+                
+                <!-- Resolved Issues Card -->
                 <div class="card">
-                    <div class="card-title">Resolved Issues</div>
-                    <div class="card-value">
-                        {{ resolved_issues_count }}
-                        <div class="progress-bar green" style="width: 80%;"></div>
+                    <div class="card-body-flex">
+                        <div class="card-left">
+                            <h2 class="card-title-h2">Resolved Issues</h2>
+                            <div class="progress-track">
+                                <div class="progress-fill green" style="width: {{ card_resolved_pct }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="card-right">
+                            <div class="card-count-huge text-green">{{ card_resolved_count }}</div>
+                        </div>
                     </div>
                 </div>
+            
+                <!-- Pending Votes Card -->
                 <div class="card">
-                    <div class="card-title">Pending Votes</div>
-                    <div class="card-value">
-                        {{ pending_votes_count }}
-                        <div class="progress-bar orange" style="width: 30%;"></div>
+                    <div class="card-body-flex">
+                        <div class="card-left">
+                            <h2 class="card-title-h2">Pending Votes</h2>
+                            <div class="progress-track">
+                                <div class="progress-fill orange" style="width: {{ card_pending_pct }}%;"></div>
+                            </div>
+                        </div>
+                        <div class="card-right">
+                            <div class="card-count-huge text-orange">{{ card_pending_count }}</div>
+                        </div>
                     </div>
                 </div>
-            </section>
+            </div>
             
             <!-- Removed the old inline notification container from main content -->
 
@@ -515,7 +704,22 @@
                                 {% if issue.id %}
                                     <tr onclick="window.location='{% url 'issue_details' issue.id %}'" style="cursor: pointer;">
                                         <td>{{ issue.title }}</td>
-                                        <td><span class="status-badge status-{{ issue.status|lower }}">{{ issue.status }}</span></td>
+                                        <td><span class="status-pill" style="
+                                            display: inline-block;
+                                            padding: 6px 12px;
+                                            border-radius: 20px;
+                                            font-size: 0.8em;
+                                            font-weight: bold;
+                                            white-space: nowrap;
+                                            {% if issue.status == 'Resolved' %} 
+                                                background-color: #c6f6d5; color: #22543d; 
+                                            {% elif issue.status == 'In Review' %} 
+                                                background-color: #feebc8; color: #744210; 
+                                            {% else %} 
+                                                background-color: #edf2f7; color: #2d3748; 
+                                            {% endif %}">
+                                             {{ issue.status }}
+                                        </span></td>
                                         <td>{{ issue.reported_by_id.full_name|default:issue.reported_by_id.email }}</td>
                                         <td>{{ issue.reported_date|date:"M d, Y" }}</td>
                                     </tr>

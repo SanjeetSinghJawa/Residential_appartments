@@ -150,9 +150,25 @@
         <div class="details-content-card">
             <div class="card-body">
                 <div class="issue-header-row">
-                    <div class="issue-title">{{ issue.title }}</div>
+                    <div style="display: flex; flex-direction: column; gap: 5px;">
+                        <div class="issue-title">{{ issue.title }}</div>
+                        <!-- Dynamic Status Badge -->
+                        <span style="
+                            display: inline-block; 
+                            padding: 4px 12px; 
+                            border-radius: 20px; 
+                            font-size: 0.75em; 
+                            font-weight: bold; 
+                            width: fit-content;
+                            {% if issue.status == 'Resolved' %} background: #c6f6d5; color: #22543d; 
+                            {% elif issue.status == 'In Review' %} background: #feebc8; color: #744210; 
+                            {% else %} background: #edf2f7; color: #2d3748; {% endif %}
+                        ">
+                             {{ issue.status }}
+                        </span>
+                    </div>
                     <button class="btn-action" onclick="toggleModal()">
-                        <span>&#128161;</span> Solutions ({{ solutions|length }})
+                        <span>💡</span> Solutions ({{ solutions|length }})
                     </button>
                 </div>
 
@@ -188,8 +204,13 @@
             <!-- Scrollable Content -->
             <div class="modal-body-scrollable">
                 {% for solution in solutions %}
-                    <div class="solution-item">
-                        <div style="font-weight: bold; color: #2d3748; margin-bottom: 8px;">{{ solution.title }}</div>
+                <div class="solution-item" style="{% if solution.upvotes >= 5 %}border: 2px solid #38a169; background: #f0fff4;{% endif %}">
+                    {% if solution.upvotes >= 5 %}
+                        <div style="color: #38a169; font-size: 0.75em; font-weight: bold; margin-bottom: 5px;">
+                            &#10003; APPROVED SOLUTION
+                        </div>
+                    {% endif %}
+                    <div style="font-weight: bold; color: #2d3748; margin-bottom: 8px;">{{ solution.title }}</div>
                         <p style="font-size: 0.95em; color: #4a5568; margin: 0; line-height: 1.5;">{{ solution.description }}</p>
                         
                         <div class="voting-actions" style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">

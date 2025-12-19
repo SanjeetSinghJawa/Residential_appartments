@@ -12,12 +12,23 @@ def vote_solution(request, solution_id, vote_type):
     solution = get_object_or_404(Solution, id=solution_id)
     
     if vote_type == 'upvote':
-        solution.upvotes = F('upvotes') + 1
-    elif vote_type == 'downvote':
-        # You can either decrease a total or increase a separate downvote field
-        solution.downvotes = F('downvotes') + 1 
+        # Use direct increment to check the value immediately for logic
+        solution.upvotes += 1
+        solution.save()
         
-    solution.save()
+        # LOGIC: If upvotes reach 5, approve solution and resolve issue
+        if solution.upvotes >= 5:
+            solution.status = 'Accepted' # Or 'Approved'
+            solution.save()
+            
+            issue = solution.issue
+            issue.status = 'Resolved'
+            issue.save()
+            
+    elif vote_type == 'downvote':
+        solution.downvotes = F('downvotes') + 1
+        solution.save()
+        
     return redirect('issue_details', issue_id=solution.issue.id)
 
 def signup(request):
@@ -127,7 +138,12 @@ def suggest_solution(request, issue_id):
             issue=issue,
             suggested_by=user,
         )
-        # Redirect back to the issue details page
+        
+        # LOGIC: If a solution is added, change issue status to 'In Review'
+        if issue.status == 'Open':
+            issue.status = 'In Review'
+            issue.save()
+
         return redirect('issue_details', issue_id=issue_id)
 
     return render(request, 'Suggest_Solution_Form.html', {'issue': issue})
@@ -137,16 +153,45 @@ def home(request):
     if user_id:
         try:
             user = UserDetails.objects.get(id=user_id)
+            
+            # Use general counts for reference (as before, but will use new vars in template)
             open_issues_count = Issue.objects.filter(status='Open', reported_by_id=user).count()
             resolved_issues_count = Issue.objects.filter(status='Resolved', reported_by_id=user).count()
-            recent_issues = Issue.objects.filter(reported_by_id=user).order_by('-reported_date')[:5]
             all_notifications = SiteNotification.objects.all().order_by('-id')[:10]
 
+            # NEW LOGIC: Calculate counts and percentages based ONLY on the recent 5 issues for the cards
+            recent_issues_queryset = Issue.objects.filter(reported_by_id=user).order_by('-reported_date')[:5]
+            recent_issues = list(recent_issues_queryset) # Convert to list to use Python logic
+
+            total_recent = len(recent_issues)
+            # Avoid division by zero if the user has no issues
+            if total_recent > 0:
+                recent_open_count = sum(1 for i in recent_issues if i.status == 'Open')
+                recent_resolved_count = sum(1 for i in recent_issues if i.status == 'Resolved')
+                recent_in_review_count = sum(1 for i in recent_issues if i.status == 'In Review') # Matches the 'Pending Votes' idea from image
+
+                # Calculate percentage widths for progress bars (as integer for CSS width style)
+                # Use max(..., 1) to ensure a visible bar even with a tiny percentage
+                open_pct = max(int((recent_open_count / total_recent) * 100), 1) if recent_open_count > 0 else 0
+                resolved_pct = max(int((recent_resolved_count / total_recent) * 100), 1) if recent_resolved_count > 0 else 0
+                in_review_pct = max(int((recent_in_review_count / total_recent) * 100), 1) if recent_in_review_count > 0 else 0
+            else:
+                recent_open_count, recent_resolved_count, recent_in_review_count = 0, 0, 0
+                open_pct, resolved_pct, in_review_pct = 0, 0, 0
+            
             context = {
                 'user_full_name': user.full_name or user.email,
+                # Old Context (kept for clarity but new vars used in cards)
                 'open_issues_count': open_issues_count,
                 'resolved_issues_count': resolved_issues_count,
-                'recent_issues': recent_issues,
+                # New Context for Summary Cards (based on recent 5 issues)
+                'recent_issues': recent_issues, # The list used for the table
+                'card_open_count': recent_open_count,
+                'card_resolved_count': recent_resolved_count,
+                'card_pending_count': recent_in_review_count,
+                'card_open_pct': open_pct,
+                'card_resolved_pct': resolved_pct,
+                'card_pending_pct': in_review_pct,
                 'notifications': all_notifications,
             }
             return render(request, 'home.html', context)
