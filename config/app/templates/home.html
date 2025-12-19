@@ -4,734 +4,221 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Residential Apartments Dashboard</title>
-    <!-- Improved CSS styling -->
     <style>
-        /* CSS Variables for color scheme */
+        /* CSS Variables */
         :root {
             --primary-color: #004a8b;
             --secondary-color: #002f5a;
-            --background-color: #f0f4f8;
+            --background-color: #f4f7fa;
             --card-bg: white;
-            --text-color: #333;
-            --text-light: #666;
-            --border-color: #ddd;
-            --blue-badge: #007bff;
-            --green-badge: #28a745;
-            --orange-badge: #ffc107;
-            --notification-count-bg: #dc3545; /* Red for new notifications */
+            --text-color: #2d3748;
+            --text-light: #718096;
+            --border-color: #e2e8f0;
+            --blue-badge: #3182ce;
+            --green-badge: #38a169;
+            --orange-badge: #d69e2e;
+            --notification-count-bg: #e53e3e;
+            --transition-speed: 0.3s;
         }
 
         body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            background-color: var(--background-color); 
-            color: var(--text-color);
-        }
-        .dashboard-container { 
-            display: flex; 
-            min-height: 100vh; 
-        }
-        .sidebar { 
-            width: 250px; 
-            background-color: var(--secondary-color); 
-            color: white; 
-            padding: 20px; 
-            box-sizing: border-box; 
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-        .logo { 
-            font-size: 1.2em; 
-            font-weight: bold; 
-            margin-bottom: 30px; 
-            display: flex; 
-            align-items: center; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .logo-icon { 
-            margin-right: 10px; 
-            font-size: 1.5em; 
-        }
-        .nav-link { 
-            display: flex; 
-            align-items: center; 
-            padding: 12px 15px; 
-            color: #aaa; 
-            text-decoration: none; 
-            margin-bottom: 10px; 
-            border-radius: 5px;
-            transition: background-color 0.3s, color 0.3s;
-            position: relative;
-        }
-        .nav-link.active, .nav-link:hover { 
-            color: white; 
-            background-color: var(--primary-color); 
-        }
-        .nav-icon { 
-            margin-right: 15px; 
-            font-size: 1.1em;
-        }
-        .main-content { 
-            flex-grow: 1; 
-            padding: 30px; 
-        }
-        .header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            background-color: var(--card-bg); 
-            padding: 15px 25px; 
-            border-radius: 8px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-            margin-bottom: 30px; 
-        }
-        .user-profile { 
-            display: flex; 
-            align-items: center; 
-        }
-        .user-avatar { 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 50%; 
-            margin-right: 15px; 
-            object-fit: cover;
-        }
-        .welcome-text span { 
-            font-weight: 500; 
-            color: var(--text-color);
-        }
-        .header-icons { 
-            display: flex; 
-            align-items: center; 
-            gap: 20px; 
-            color: var(--text-light);
-        }
-        .header-icon-btn { 
-            cursor: pointer;
-            transition: color 0.3s;
-            position: relative; /* Needed for positioning the badge */
-        }
-        .header-icon-btn:hover {
-            color: var(--primary-color);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            margin: 0; padding: 0; background-color: var(--background-color); color: var(--text-color);
+            line-height: 1.5;
         }
 
-        /* --- Notification Specific Styling --- */
-        .notification-badge {
-            position: absolute;
-            top: -5px;
-            right: -10px;
-            background-color: var(--notification-count-bg);
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 0.7em;
-            font-weight: bold;
-        }
-        .nav-link .notification-badge {
-            right: 165px;
-            top: 5px;
-        }
+        /* Sidebar & Layout */
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background-color: var(--secondary-color); color: white; padding: 25px 15px; box-sizing: border-box; flex-shrink: 0; }
+        .logo { font-size: 1.1em; font-weight: 700; margin-bottom: 40px; padding-left: 10px; display: flex; align-items: center; letter-spacing: 0.5px; }
+        .logo-icon { margin-right: 12px; font-size: 1.4em; }
         
-        /* The Notification Popup Modal/Sidebar */
-        .notification-popup {
-           
-            position: fixed; 
-          
-            height: 100%;
-            width: 350px;
-            background-color: var(--card-bg);
-            box-shadow: -4px 0 15px rgba(0,0,0,0.15);
-            z-index: 1000;
-            flex-direction: column;
+        .nav-link { 
+            display: flex; align-items: center; padding: 12px 15px; color: #cbd5e0; text-decoration: none; 
+            margin-bottom: 8px; border-radius: 8px; transition: all var(--transition-speed); position: relative;
         }
-        .notification-popup.is-open {
-            display: flex;
-        }
-        .popup-header {
-            padding: 20px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .close-btn {
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: var(--text-light);
-        }
-        .popup-content-scroll {
-            padding: 20px;
-            overflow-y: auto; /* Allows scrolling if many notifications */
-            flex-grow: 1;
+        .nav-link:hover { color: white; background-color: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .nav-link.active { color: white; background-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .nav-icon { margin-right: 12px; font-size: 1.1em; opacity: 0.8; }
+
+        /* Main Content */
+        .main-content { flex-grow: 1; padding: 30px 40px; }
+        .header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            background-color: var(--card-bg); padding: 15px 30px; border-radius: 12px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 35px; 
         }
 
-        /* Styling for individual notification items (reused from previous CSS) */
-        .notification-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            background-color: #f8f9fa;
-            border: 1px solid #e9ecef;
+        /* Professional Profile Dropdown */
+        .user-profile-container { position: relative; padding-bottom: 5px; cursor: pointer; }
+        .user-profile { display: flex; align-items: center; font-weight: 500; font-size: 0.95rem; }
+        .welcome-text span { color: var(--primary-color); font-weight: 600; margin-left: 4px; }
+        
+        .profile-dropdown {
+            position: absolute; top: 110%; right: 0; background-color: white; min-width: 190px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 10px; display: none; 
+            z-index: 1100; border: 1px solid var(--border-color); animation: fadeIn 0.2s ease-out;
         }
-        .notification-item.new-issue {
-            background-color: #e0f0ff; 
-            border-color: var(--blue-badge);
-        }
-        .notification-icon {
-            font-size: 1.5rem;
-            color: var(--blue-badge);
-            margin-right: 15px;
-        }
-        .notification-content {
-            flex-grow: 1;
-        }
-        .notification-title {
-            font-weight: bold;
-            color: #333;
-            margin: 0;
-        }
-        .notification-message {
-            color: #666;
-            margin: 0;
-            font-size: 0.9rem;
-        }
-        .notification-time {
-            font-size: 0.8rem;
-            color: #999;
-            white-space: nowrap;
-            margin-left: 15px;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .profile-dropdown::before { content: ""; position: absolute; top: -15px; left: 0; width: 100%; height: 15px; background: transparent; }
+        .user-profile-container:hover .profile-dropdown { display: block; }
+        
+        .dropdown-item { display: flex; align-items: center; padding: 12px 18px; text-decoration: none; color: var(--text-color); font-size: 0.9rem; transition: background 0.2s; }
+        .dropdown-item:hover { background-color: #f7fafc; color: var(--primary-color); }
+        .dropdown-divider { height: 1px; background-color: var(--border-color); margin: 6px 0; }
 
-        /* --- Rest of existing CSS for cards/table --- */
-        .summary-cards { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 25px; 
-            margin-bottom: 30px; 
-        }
+        /* Summary Cards */
+        .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 40px; }
         .card { 
-            background-color: var(--card-bg); 
-            padding: 25px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            transition: transform 0.3s;
+            background-color: var(--card-bg); padding: 25px; border-radius: 16px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: 1px solid transparent;
         }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-        .card-title { 
-            font-size: 0.9em; 
-            color: var(--text-light); 
-            margin-bottom: 12px; 
-        }
-        .card-value { 
-            font-size: 2.2em; 
-            font-weight: bold; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-        }
-        .progress-bar { 
-            height: 6px; 
-            width: 60%; 
-            border-radius: 3px; 
-        }
-        .blue { background-color: var(--blue-badge); }
-        .green { background-color: var(--green-badge); }
-        .orange { background-color: var(--orange-badge); }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: var(--border-color); }
+        .card-body-flex { display: flex; align-items: stretch; gap: 20px; }
+        .card-left { flex: 0 0 65%; display: flex; flex-direction: column; justify-content: center; }
+        .card-right { flex: 0 0 35%; display: flex; align-items: center; justify-content: center; border-left: 1px solid var(--border-color); }
+        
+        .card-title-h2 { font-size: 1.1em; font-weight: 600; color: var(--text-light); margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .card-count-huge { font-size: 3.5em; font-weight: 800; line-height: 1; }
+        
+        .progress-track { height: 10px; width: 100%; background-color: #edf2f7; border-radius: 20px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 20px; transition: width 1s cubic-bezier(0.1, 0, 0.1, 1); }
 
-        .recent-issues-section h2 { 
-            font-size: 1.5em; 
-            margin-bottom: 20px; 
-            color: var(--secondary-color);
-        }
-        .issues-table { 
-            width: 96%; 
-            background-color: var(--card-bg); 
-            padding: 20px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-            overflow-x: auto;
-        }
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-        }
-        th, td { 
-            padding: 15px 0; 
-            text-align: left; 
-            border-bottom: 1px solid var(--border-color); 
-        }
-        th { 
-            color: var(--text-light); 
-            font-weight: 500; 
-            text-transform: uppercase;
-            font-size: 0.85em;
-        }
-        .status-badge { 
-            padding: 6px 14px; 
-            border-radius: 20px; 
-            font-size: 0.8em; 
-            font-weight: bold; 
-            display: inline-block;
-        }
-        .status-open { background-color: #e0f0ff; color: var(--blue-badge); }
-        .status-review { background-color: #fffbe6; color: var(--orange-badge); }
-        .status-resolved { background-color: #e6ffec; color: var(--green-badge); }
-        tr[onclick]:hover {
-            background-color: #f9f9f9;
-        }
+        /* Issues Table Styling */
+        .recent-issues-section h2 { font-size: 1.4em; margin-bottom: 20px; font-weight: 700; color: var(--secondary-color); }
+        .issues-table { background-color: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        .issues-table thead { background-color: #f8fafc; border-bottom: 2px solid var(--border-color); }
+        .issues-table th { padding: 18px 25px; text-align: left; color: var(--text-light); font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; }
+        .issues-table td { padding: 18px 25px; border-bottom: 1px solid var(--border-color); font-size: 0.95rem; transition: background 0.2s; }
+        .issues-table tr:last-child td { border-bottom: none; }
+        .issues-table tbody tr:hover { background-color: #fcfcfd; }
+        .issues-table tbody tr:hover td:first-child { box-shadow: inset 4px 0 0 var(--primary-color); }
+
+        .status-pill { padding: 6px 14px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+
+        /* Notification Modal */
         .notification-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.6); /* Dark background overlay */
-            display: flex;
-            justify-content: center;
-            align-items: center; /* Centers the popup perfectly */
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s, visibility 0.3s;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; 
+            visibility: hidden; opacity: 0; transition: all 0.3s; z-index: 2000;
         }
-
-        .notification-overlay.is-open {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* --- Popup Styling (Matching the Image) --- */
+        .notification-overlay.is-open { visibility: visible; opacity: 1; }
         .notification-popup {
-            background: white;
-            padding: 20px;
-            border-radius: 12px; /* Rounded corners like the image */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 90%;
-            max-width: 500px; /* Max width constraint */
-            max-height: 80vh;
-            overflow-y: auto;
-            transform: scale(0.95); /* Little pop effect */
-            transition: transform 0.3s ease-out;
+            background: white; border-radius: 20px; width: 90%; max-width: 500px; max-height: 75vh; 
+            display: flex; flex-direction: column; overflow: hidden; transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
-
-        .notification-overlay.is-open .notification-popup {
-            transform: scale(1);
-        }
-
-        .popup-header {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .close-btn {
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: #aaa;
-        }
-
-        /* --- Individual Item Styling --- */
+        .notification-overlay.is-open .notification-popup { transform: scale(1); }
+        .popup-header { padding: 25px; font-size: 1.3rem; font-weight: 700; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; }
+        .close-btn { cursor: pointer; color: var(--text-light); font-size: 1.5rem; line-height: 1; }
+        
         .notification-item {
-            display: flex;
-            align-items: flex-start;
-            padding: 15px;
-            background: #f9f9ff; /* Light blue background for unread/new */
-            border-radius: 8px;
-            margin-bottom: 10px;
-            text-decoration: none;
-            color: inherit;
-            position: relative;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex; padding: 20px; border-bottom: 1px solid #f7fafc; text-decoration: none; color: inherit; transition: background 0.2s;
         }
-
-        .notification-item:hover {
-            background: #e9e9ff;
-        }
-
-        .notification-icon-box {
-            background: #007bff; /* Blue color from image */
-            color: white;
-            border-radius: 50%; /* Circular icon */
-            width: 30px;
-            height: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            margin-right: 15px;
-            flex-shrink: 0;
-        }
-
-        .notification-content {
-            flex-grow: 1;
-        }
-
-        .notification-title {
-            font-weight: bold; /* Bold like the image */
-            margin: 0;
-            color: #333;
-        }
-
-        .notification-message {
-            margin: 4px 0 0 0;
-            color: #666; /* Lighter text color */
-            font-size: 0.9rem;
-        }
-
-        .notification-timestamp {
-            font-size: 0.8rem;
-            color: #999;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            text-align: right;
-        }
-        .progress-track {
-            height: 8px;
-            width: 100%;
-            background-color: #e0e0e0; /* The grey background */
-            border-radius: 10px;
-            margin-top: 15px; /* Space between the number and the bar */
-            overflow: hidden; /* Clips the inner bar to the rounded corners */
-        }
-
-        /* The colored fill */
-        .progress-fill {
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.6s ease; /* Smooth animation when page loads */
-        }
-
-        /* Color definitions */
-        .blue { background-color: var(--blue-badge); }
-        .green { background-color: var(--green-badge); }
-        .orange { background-color: var(--orange-badge); }
-
-        /* Ensure the card value and number look clean */
-        .card-value {
-            font-size: 2.2em;
-            font-weight: bold;
-            display: block; /* Stack the number and the bar vertically */
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between; /* Pushes title to left, count to right */
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        /* Make title look like an H2 */
-        .card-title-h2 {
-            font-size: 1.5em; /* H2 standard size */
-            font-weight: 600;
-            color: var(--secondary-color);
-            margin: 0;
-        }
-
-        /* Style for the count on the right */
-        .card-count {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: var(--text-color);
-        }
-
-        /* The grey track remains full width below the header */
-        .progress-track {
-            height: 8px;
-            width: 100%;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 10px;
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline; /* Aligns title text with the bottom of the big number */
-            margin-bottom: 10px;
-        }
-
-        /* Title styling */
-        .card-title-h2 {
-            font-size: 1.5em;
-            font-weight: 600;
-            color: var(--secondary-color);
-            margin: 0;
-        }
-
-        /* Big Number styling - taking "complete height" relative to the header */
-        .card-count {
-            font-size: 3.5em; /* Significantly larger */
-            font-weight: 800;
-            line-height: 1;  /* Removes extra padding around the number */
-        }
-
-        /* Color Alignment for the numbers */
-        .text-blue { color: var(--blue-badge); }
-        .text-green { color: var(--green-badge); }
-        .text-orange { color: var(--orange-badge); }
-
-        /* Progress bar track */
-        .progress-track {
-            height: 10px;
-            width: 100%;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        /* The main container inside the card */
-        .card-body-flex {
-            display: flex;
-            align-items: stretch; /* Forces both sides to be the same height */
-            gap: 15px;
-        }
-
-        /* Left side: 70% width */
-        .card-left {
-            flex: 0 0 70%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center; /* Centers title and bar vertically */
-        }
-
-        /* Right side: 30% width */
-        .card-right {
-            flex: 0 0 30%;
-            display: flex;
-            align-items: center;    /* Vertical center of number */
-            justify-content: center; /* Horizontal center of number */
-            border-left: 1px solid #eee; /* Optional: subtle divider */
-        }
-
-        /* Typography and Bar adjustments */
-        .card-title-h2 {
-            font-size: 1.4em;
-            font-weight: 600;
-            color: var(--secondary-color);
-            margin: 0 0 10px 0;
-        }
-
-        .card-count-huge {
-            font-size: 4em; /* Maximum impact */
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        .progress-track {
-            height: 8px;
-            width: 100%;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        /* Color Alignment */
-        .text-blue { color: var(--blue-badge); }
-        .text-green { color: var(--green-badge); }
-        .text-orange { color: var(--orange-badge); }
-        /* Make the entire table header background grey */
-        .issues-table thead {
-            background-color: #f7f7f7; /* A light grey background */
-        }
-
-        /* Style for individual header cells (th) */
-        .issues-table th {
-            color: var(--text-color); /* Uses the main text color for contrast */
-            font-weight: bold;       /* Make the text bold */
-            text-transform: uppercase;
-            font-size: 0.9em;        /* Slightly larger font size than default small */
-            padding: 15px 20px;      /* Added padding to top/bottom for height */
-        }
-
-        /* Ensure data cells also have consistent padding */
-        .issues-table td {
-            padding: 15px 20px;
-        }
+        .notification-item:hover { background-color: #f0f7ff; }
+        .notification-icon-box { background: var(--primary-color); color: white; border-radius: 12px; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-right: 15px; flex-shrink: 0; }
+        .notification-badge { background: var(--notification-count-bg); color: white; border-radius: 50%; padding: 2px 7px; font-size: 0.65rem; position: absolute; top: 10px; right: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="dashboard-container">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
                 <span class="logo-icon">🏠</span>
-                <div>
-                    <div>Residential</div>
-                    <div>APARTMENTS</div>
-                </div>
+                <div><div>Residential</div><div style="font-size: 0.7em; opacity: 0.7;">MANAGEMENT</div></div>
             </div>
             <nav>
-                <a href="#" class="nav-link active">
+                <a href="{% url 'home' %}" class="nav-link active">
                     <span class="nav-icon">📊</span> Dashboard
                 </a>
-                <a href="{% url 'report-issue' %}" class="nav-link">
-                    <span class="nav-icon">❗</span> Raise an Issues
-                </a>
-                <a href="#" class="nav-link">
+                <a href="{% url 'report-issue' %}" class="nav-link"><span class="nav-icon">❗</span> Raise an Issue</a>
+                <a href="#" class="nav-link" onclick="event.preventDefault(); filterByVoting();">
                     <span class="nav-icon">🗳️</span> Voting
                 </a>
-                <!-- Sidebar Notification Link -->
-                <!-- Use JS function toggleNotifications() to open/close the popup -->
                 <a href="#" class="nav-link" onclick="event.preventDefault(); toggleNotifications();">
-                    
-                    <span class="nav-icon">🔔</span> 
-                     <!-- Notification Badge in Sidebar -->
-                     {% if notifications|length > 0 %}
-                     <span class="notification-badge">{{ notifications|length }}</span>
-                    {% endif %}
-                   
+                    <span class="nav-icon">🔔</span>
+                    {% if notifications|length > 0 %}<span class="notification-badge">{{ notifications|length }}</span>{% endif %}
                     Notifications
-                </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-icon">👤</span> Profile
-                </a>
-                <a href="{% url 'logout' %}" class="nav-link" style="color: #ff4d4d;">
-                    <span class="nav-icon">🚪</span> Logout
                 </a>
             </nav>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="main-content">
-            <!-- Header/Top Nav -->
             <header class="header">
-                <div class="user-profile">
-                    <!-- Placeholder avatar using initials or similar -->
-                    <!-- <img src="via.placeholder.com" alt="User Avatar" class="user-avatar"> -->
-                    <span>&#128100;</span> <hr><hr>
-                    <div class="welcome-text">Welcome, <span>{{ user_full_name }}</span></div>
+                <div class="user-profile-container">
+                    <div class="user-profile">
+                        <span style="margin-right: 10px; opacity: 0.7;">👤</span>
+                        <div class="welcome-text">Hi, <span>{{ user_full_name }}</span> &nbsp;▾</div>
+                    </div>
+                    <div class="profile-dropdown">
+                        <a href="#" class="dropdown-item"><span>👤</span> My Profile</a>
+                        <div class="dropdown-divider"></div>
+                        <a href="{% url 'logout' %}" class="dropdown-item" style="color: #e53e3e;"><span>🚪</span> Sign Out</a>
+                    </div>
                 </div>
                 <div class="header-icons">
-                    <span class="header-icon-btn">🔍</span>
-                    <span class="header-icon-btn">✉️</span>
-                    <!-- Header Notification Button -->
-                    <!-- Use JS function toggleNotifications() to open/close the popup -->
-                    <span class="header-icon-btn" onclick="toggleNotifications()">
-                        🔔
-                        <!-- Notification Badge in Header Icons -->
-                        {% if notifications|length > 0 %}
-                            <span class="notification-badge">{{ notifications|length }}</span>
-                        {% endif %}
+                    <span class="header-icon-btn" onclick="toggleNotifications()" style="font-size: 1.2rem; cursor: pointer; position: relative;">
+                        🔔 {% if notifications|length > 0 %}<span class="notification-badge" style="top:-5px; right:-10px;">{{ notifications|length }}</span>{% endif %}
                     </span>
-                    <span class="header-icon-btn">⚙️</span>
                 </div>
             </header>
 
-            <!-- Summary Cards -->
             <div class="summary-cards"> 
-                <!-- Open Issues Card -->
                 <div class="card">
                     <div class="card-body-flex">
                         <div class="card-left">
                             <h2 class="card-title-h2">Open Issues</h2>
-                            <div class="progress-track">
-                                <div class="progress-fill blue" style="width: {{ card_open_pct }}%;"></div>
-                            </div>
+                            <div class="progress-track"><div class="progress-fill" style="width: {{ card_open_pct }}%; background-color: var(--blue-badge);"></div></div>
                         </div>
-                        <div class="card-right">
-                            <div class="card-count-huge text-blue">{{ card_open_count }}</div>
-                        </div>
+                        <div class="card-right"><div class="card-count-huge" style="color: var(--blue-badge);">{{ card_open_count }}</div></div>
                     </div>
                 </div>
-                
-                <!-- Resolved Issues Card -->
                 <div class="card">
                     <div class="card-body-flex">
                         <div class="card-left">
-                            <h2 class="card-title-h2">Resolved Issues</h2>
-                            <div class="progress-track">
-                                <div class="progress-fill green" style="width: {{ card_resolved_pct }}%;"></div>
-                            </div>
+                            <h2 class="card-title-h2">Resolved</h2>
+                            <div class="progress-track"><div class="progress-fill" style="width: {{ card_resolved_pct }}%; background-color: var(--green-badge);"></div></div>
                         </div>
-                        <div class="card-right">
-                            <div class="card-count-huge text-green">{{ card_resolved_count }}</div>
-                        </div>
+                        <div class="card-right"><div class="card-count-huge" style="color: var(--green-badge);">{{ card_resolved_count }}</div></div>
                     </div>
                 </div>
-            
-                <!-- Pending Votes Card -->
                 <div class="card">
                     <div class="card-body-flex">
                         <div class="card-left">
                             <h2 class="card-title-h2">Pending Votes</h2>
-                            <div class="progress-track">
-                                <div class="progress-fill orange" style="width: {{ card_pending_pct }}%;"></div>
-                            </div>
+                            <div class="progress-track"><div class="progress-fill" style="width: {{ card_pending_pct }}%; background-color: var(--orange-badge);"></div></div>
                         </div>
-                        <div class="card-right">
-                            <div class="card-count-huge text-orange">{{ card_pending_count }}</div>
-                        </div>
+                        <div class="card-right"><div class="card-count-huge" style="color: var(--orange-badge);">{{ card_pending_count }}</div></div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Removed the old inline notification container from main content -->
 
-            <!-- Recent Issues Table -->
             <section class="recent-issues-section">
                 <h2>Recent Issues</h2>
                 <div class="issues-table">
                     <table>
                         <thead>
-                            <tr>
-                                <th>Issue</th>
-                                <th>Status</th>
-                                <th>Reported By</th> <!-- NEW Column Header -->
-                                <th>Reported Date</th>
-                            </tr>
+                            <tr><th>Issue Description</th><th>Status</th><th>Reported By</th><th>Date</th></tr>
                         </thead>
                         <tbody>
                             {% for issue in recent_issues %}
-                                {% if issue.id %}
-                                    <tr onclick="window.location='{% url 'issue_details' issue.id %}'" style="cursor: pointer;">
-                                        <td>{{ issue.title }}</td>
-                                        <td><span class="status-pill" style="
-                                            display: inline-block;
-                                            padding: 6px 12px;
-                                            border-radius: 20px;
-                                            font-size: 0.8em;
-                                            font-weight: bold;
-                                            white-space: nowrap;
-                                            {% if issue.status == 'Resolved' %} 
-                                                background-color: #c6f6d5; color: #22543d; 
-                                            {% elif issue.status == 'In Review' %} 
-                                                background-color: #feebc8; color: #744210; 
-                                            {% else %} 
-                                                background-color: #edf2f7; color: #2d3748; 
-                                            {% endif %}">
-                                             {{ issue.status }}
-                                        </span></td>
-                                        <td>{{ issue.reported_by_id.full_name|default:issue.reported_by_id.email }}</td>
-                                        <td>{{ issue.reported_date|date:"M d, Y" }}</td>
-                                    </tr>
-                                {% else %}
-                                    <tr>
-                                        <td colspan="3">Invalid issue data</td>
-                                    </tr>
-                                {% endif %}
+                            <tr onclick="window.location='{% url 'issue_details' issue.id %}'" style="cursor: pointer;">
+                                <td style="font-weight: 500;">{{ issue.title }}</td>
+                                <td>
+                                    <span class="status-pill" style="
+                                        {% if issue.status == 'Resolved' %} background-color: #def7ec; color: #03543f; 
+                                        {% elif issue.status == 'In Review' %} background-color: #fef3c7; color: #92400e; 
+                                        {% else %} background-color: #e1effe; color: #1e429f; {% endif %}">
+                                        {{ issue.status }}
+                                    </span>
+                                </td>
+                                <td style="color: var(--text-light);">{{ issue.reported_by_id.full_name|default:issue.reported_by_id.email }}</td>
+                                <td style="color: var(--text-light);">{{ issue.reported_date|date:"M d, Y" }}</td>
+                            </tr>
                             {% empty %}
-                                <tr>
-                                    <td colspan="3">No issues found.</td>
-                                </tr>
+                            <tr><td colspan="4" style="text-align: center; padding: 40px; color: var(--text-light);">No issues reported yet.</td></tr>
                             {% endfor %}
                         </tbody>
                     </table>
@@ -739,53 +226,93 @@
             </section>
         </main>
     </div>
-    
-    <!-- Notification Popup Element -->
-    <div class="notification-overlay" id="notificationOverlay">
-        <div class="notification-popup" id="notificationPopup">
-            <div class="popup-header">
-                Notifications 
-                <span class="close-btn" onclick="toggleNotifications()">✕</span>
+
+    <!-- Notification Overlay -->
+    <div class="notification-overlay" id="notificationOverlay" onclick="if(event.target==this) toggleNotifications()">
+        <div class="notification-popup" style="display: flex; flex-direction: column; overflow: hidden;">
+            
+            <!-- FIXED HEADER: Stays at the top -->
+            <div class="popup-header" style="padding: 20px 24px; border-bottom: 1px solid #edf2f7; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="font-size: 1.2rem; display: flex; align-items: center;">🔔</span>
+                    <span style="font-weight: 700; color: var(--secondary-color); letter-spacing: -0.3px;">Notifications</span>
+                </div>
+                <span class="close-btn" onclick="toggleNotifications()" style="font-size: 1.8rem; line-height: 1; cursor: pointer; height: 30px; width: 30px; display: flex; align-items: center; justify-content: center;">&times;</span>
             </div>
-            <div class="popup-content-scroll">
+            
+            <!-- SCROLLABLE CONTENT: Only this part moves -->
+            <div class="popup-content-scroll" style="padding: 0; overflow-y: auto; flex-grow: 1; max-height: calc(75vh - 70px);">
                 {% for note in notifications %}
-                    {% if note.issue %}
-                    <a href="{% url 'issue_details' note.issue.id %}" class="notification-item">
-                        <div class="notification-icon-box">!</div>
-                        <div class="notification-content">
-                            <p class="notification-title">{{ note.title }}</p>
-                            <p class="notification-message">{{ note.message }}</p>
-                            <p class="notification-message">Reported by: {{ note.issue.reported_by_id.full_name|default:note.issue.reported_by_id.email }}</p>
-                        </div>
-                        <!-- Use the custom time_since_created method from models.py -->
-                        <span class="notification-timestamp">{{ note.time_since_created }}</span>
-                    </a>
-                    {% else %}
-                     <div class="notification-item">
-                         <div class="notification-icon-box">!</div>
-                        <div class="notification-content">
-                            <p class="notification-title">{{ note.title }}</p>
-                            <p class="notification-message">{{ note.message }}</p>
-                            <p class="notification-message">Reported by: {{ note.issue.reported_by_id.full_name|default:note.issue.reported_by_id.email }}</p>
-                        </div>
-                        <span class="notification-timestamp">{{ note.time_since_created }}</span>
+                <a href="{% if note.issue.id %}{% url 'issue_details' note.issue.id %}{% else %}#{% endif %}" 
+                class="notification-item" 
+                style="display: flex; align-items: flex-start; padding: 18px 24px; border-bottom: 1px solid #f1f5f9; transition: 0.2s; gap: 16px; text-decoration: none;">
+                    
+                    <div class="notification-icon-box" style="width: 42px; height: 42px; flex-shrink: 0; background: rgba(0, 74, 139, 0.05); color: var(--primary-color); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-top: 2px;">
+                        {% if "Resolved" in note.title %}✅{% else %}❗{% endif %}
                     </div>
-                    {% endif %}
+                    
+                    <div class="notification-content" style="flex-grow: 1; display: flex; flex-direction: column;">
+                        <p style="margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--secondary-color); line-height: 1.3;">{{ note.title }}</p>
+                        <p style="margin: 4px 0 12px 0; color: var(--text-light); font-size: 0.88rem; line-height: 1.5;">{{ note.message }}</p>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 0.8rem; opacity: 0.5;">👤</span>
+                                <span style="color: var(--primary-color); font-size: 0.78rem; font-weight: 600;">
+                                    {{ note.issue.reported_by_id.full_name|default:note.issue.reported_by_id.email }}
+                                </span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 0.8rem; opacity: 0.5;">🕒</span>
+                                <span style="font-size: 0.75rem; color: var(--text-light); font-weight: 500;">
+                                    {{ note.time_since_created }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </a>
                 {% empty %}
-                    <p>No new notifications.</p>
+                <div style="padding: 80px 40px; text-align: center;">
+                    <div style="width: 60px; height: 60px; background: #f7fafc; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <span style="font-size: 1.5rem; opacity: 0.4;">📭</span>
+                    </div>
+                    <p style="color: var(--text-light); font-size: 0.95rem; font-weight: 500;">No new notifications</p>
+                </div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    
-    <!-- JavaScript to handle the popup toggle -->
+
     <script>
         function toggleNotifications() {
-            const overlay = document.getElementById('notificationOverlay');
-            overlay.classList.toggle('is-open');
+            document.getElementById('notificationOverlay').classList.toggle('is-open');
         }
-    </script>
+        function filterByVoting() {
+            // 1. Get all table rows from the tbody
+            const tableRows = document.querySelectorAll('.issues-table tbody tr');
+            
+            tableRows.forEach(row => {
+                // 2. Find the status pill inside each row
+                const statusPill = row.querySelector('.status-pill');
+                
+                if (statusPill) {
+                    const statusText = statusPill.textContent.trim();
+                    
+                    // 3. Show only rows where status is "In Review"
+                    if (statusText === "In Review") {
+                        row.style.display = ""; // Visible
+                    } else {
+                        row.style.display = "none"; // Hidden
+                    }
+                }
+            });
 
+            // Optional: Highlight the "Voting" link as active
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+    </script>
 </body>
 </html>
