@@ -225,12 +225,15 @@ def request_vote(request, solution_id):
     user_id = request.session.get('user_id')
     user = get_object_or_404(UserDetails, id=user_id)
 
+    # 1. Safety check: Only creator can request, and only if not already resolved
     if solution.issue.reported_by_id != user or solution.issue.status == 'Resolved':
         return redirect('issue_details', issue_id=solution.issue.id)
 
     # UNLOCK VOTING: Set the flag to True
-    solution.is_voting_enabled = True
-    solution.save()
+    # 2. NEW: Only send notification if voting was NOT already enabled
+    if not solution.is_voting_enabled:
+        solution.is_voting_enabled = True
+        solution.save()
 
     # Create a site-wide notification
     SiteNotification.objects.create(

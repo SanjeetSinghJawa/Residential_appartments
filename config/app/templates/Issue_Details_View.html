@@ -210,9 +210,16 @@
                         <!-- Case 1: If current user is the ISSUE CREATOR -->
                         {% if issue.reported_by_id.id == request.session.user_id %}
                             {% if issue.status != 'Resolved' %}
-                                <a href="{% url 'request_vote' solution.id %}" class="btn-vote" style="border-color: var(--primary-color); color: var(--primary-color);">
-                                    📢 Request Vote
-                                </a>
+                                <!-- NEW: Check if voting is already enabled/requested -->
+                                {% if not solution.is_voting_enabled %}
+                                    <a href="{% url 'request_vote' solution.id %}" class="btn-vote" style="border-color: var(--primary-color); color: var(--primary-color);">
+                                        📢 Request Vote
+                                    </a>
+                                {% else %}
+                                    <span style="font-size: 0.85rem; color: var(--blue-badge); font-weight: 600;">
+                                        📢 Vote Requested
+                                    </span>
+                                {% endif %}
                             {% else %}
                                 <span style="font-size: 0.8rem; color: var(--green-badge); font-weight: 700;">
                                     Voting : Can't vote for closed Issue
