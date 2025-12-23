@@ -119,6 +119,23 @@
         .notification-item:hover { background-color: #f0f7ff; }
         .notification-icon-box { background: var(--primary-color); color: white; border-radius: 12px; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-right: 15px; flex-shrink: 0; }
         .notification-badge { background: var(--notification-count-bg); color: white; border-radius: 50%; padding: 2px 7px; font-size: 0.65rem; position: absolute; top: 0px; right: 182px; font-weight: bold; }
+        .user-profile-img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .welcome-text {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
     </style>
 </head>
 <body>
@@ -148,9 +165,30 @@
         <main class="main-content">
             <header class="header">
                 <div class="user-profile-container">
-                    <div class="user-profile">
+                    <!-- <div class="user-profile">
                         <span style="margin-right: 10px; opacity: 0.7;">👤</span>
                         <div class="welcome-text">Welcome, <span>{{ user_full_name }}</span> <span style="font-size: 20px;">&nbsp;▾</span></div>
+                    </div> -->
+                    <div class="header-right-edge">
+                        {% if user_object.profile_picture %}
+                            <!-- Show uploaded image if available -->
+                            <div class="user-profile">
+                                <img src="{{ user_object.profile_picture.url }}" alt="Profile" class="user-profile-img">
+                                <div class="welcome-text">
+                                    Welcome, <span>{{ user_full_name }}</span> 
+                                    <span style="font-size: 20px;">&nbsp;▾</span>
+                                </div>
+                            </div>
+                        {% else %}
+                            <!-- Fallback code if no image is available -->
+                            <div class="user-profile">
+                                <span style="margin-right: 10px; opacity: 0.7;">👤</span>
+                                <div class="welcome-text">
+                                    Welcome, <span>{{ user_full_name }}</span> 
+                                    <span style="font-size: 20px;">&nbsp;▾</span>
+                                </div>
+                            </div>
+                        {% endif %}
                     </div>
                     <div class="profile-dropdown">
                         <a href="#" class="dropdown-item"><span style="margin-right: 10px; opacity: 0.7;">👤</span> My Profile</a>

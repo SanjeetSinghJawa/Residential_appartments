@@ -9,6 +9,7 @@ class UserDetails(models.Model):
     password = models.CharField(max_length=100)
     flat_number = models.CharField(max_length=100)
     role = models.CharField(max_length=100)
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
 
     def __str__(self):
         return self.full_name if self.full_name else self.email
@@ -30,20 +31,20 @@ class Issue(models.Model):
         return self.title
     
 class Solution(models.Model):
-    title = models.CharField(max_length=150)
+    title = models.CharField(max_length=200)
     description = models.TextField()
-    # Link back to the issue it solves
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='solutions')
-    # Link back to the user who suggested it
     suggested_by = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
     suggested_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=50, default='Suggested') # e.g., Suggested, In Progress, Accepted
-    
+    status = models.CharField(max_length=20, default='Pending') # 'Pending' or 'Accepted'
+
+    # NEW FIELD: Tracks which users have already cast a vote on this specific solution
+    voted_by = models.ManyToManyField(UserDetails, related_name='voted_solutions', blank=True)
 
     def __str__(self):
-        return f"{self.title} for Issue: {self.issue.title}"
+        return self.title
     
 # New model for site-wide notifications
 class SiteNotification(models.Model):
