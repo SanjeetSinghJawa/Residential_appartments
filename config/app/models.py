@@ -40,6 +40,7 @@ class Solution(models.Model):
     downvotes = models.IntegerField(default=0)
     suggested_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default='Suggested') # e.g., Suggested, In Progress, Accepted
+    
 
     def __str__(self):
         return f"{self.title} for Issue: {self.issue.title}"

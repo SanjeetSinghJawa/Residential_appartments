@@ -55,7 +55,7 @@
         .welcome-text span { color: var(--primary-color); font-weight: 600; margin-left: 4px; }
         
         .profile-dropdown {
-            position: absolute; top: 110%; right: 0; background-color: white; min-width: 190px;
+            position: absolute; top: 110%; right: -5px; background-color: white; min-width: 190px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.1); border-radius: 10px; display: none; 
             z-index: 1100; border: 1px solid var(--border-color); animation: fadeIn 0.2s ease-out;
         }
@@ -63,9 +63,9 @@
         .profile-dropdown::before { content: ""; position: absolute; top: -15px; left: 0; width: 100%; height: 15px; background: transparent; }
         .user-profile-container:hover .profile-dropdown { display: block; }
         
-        .dropdown-item { display: flex; align-items: center; padding: 12px 18px; text-decoration: none; color: var(--text-color); font-size: 0.9rem; transition: background 0.2s; }
+        .dropdown-item { display: flex; align-items: center; padding: 12px 18px; margin: 2px; text-decoration: none; color: var(--text-color); font-size: 0.9rem; transition: background 0.2s; }
         .dropdown-item:hover { background-color: #f7fafc; color: var(--primary-color); }
-        .dropdown-divider { height: 1px; background-color: var(--border-color); margin: 6px 0; }
+        .dropdown-divider { height: 1px; background-color: var(--border-color); }
 
         /* Summary Cards */
         .summary-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 40px; }
@@ -118,7 +118,7 @@
         }
         .notification-item:hover { background-color: #f0f7ff; }
         .notification-icon-box { background: var(--primary-color); color: white; border-radius: 12px; width: 40px; height: 40px; display: flex; justify-content: center; align-items: center; margin-right: 15px; flex-shrink: 0; }
-        .notification-badge { background: var(--notification-count-bg); color: white; border-radius: 50%; padding: 2px 7px; font-size: 0.65rem; position: absolute; top: 10px; right: 15px; font-weight: bold; }
+        .notification-badge { background: var(--notification-count-bg); color: white; border-radius: 50%; padding: 2px 7px; font-size: 0.65rem; position: absolute; top: 0px; right: 182px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -150,17 +150,17 @@
                 <div class="user-profile-container">
                     <div class="user-profile">
                         <span style="margin-right: 10px; opacity: 0.7;">👤</span>
-                        <div class="welcome-text">Hi, <span>{{ user_full_name }}</span> &nbsp;▾</div>
+                        <div class="welcome-text">Welcome, <span>{{ user_full_name }}</span> <span style="font-size: 20px;">&nbsp;▾</span></div>
                     </div>
                     <div class="profile-dropdown">
-                        <a href="#" class="dropdown-item"><span>👤</span> My Profile</a>
+                        <a href="#" class="dropdown-item"><span style="margin-right: 10px; opacity: 0.7;">👤</span> My Profile</a>
                         <div class="dropdown-divider"></div>
-                        <a href="{% url 'logout' %}" class="dropdown-item" style="color: #e53e3e;"><span>🚪</span> Sign Out</a>
+                        <a href="{% url 'logout' %}" class="dropdown-item" style="color: #e53e3e;"><span style="margin-right: 10px; opacity: 0.7;">🚪</span>  Sign Out</a>
                     </div>
                 </div>
                 <div class="header-icons">
                     <span class="header-icon-btn" onclick="toggleNotifications()" style="font-size: 1.2rem; cursor: pointer; position: relative;">
-                        🔔 {% if notifications|length > 0 %}<span class="notification-badge" style="top:-5px; right:-10px;">{{ notifications|length }}</span>{% endif %}
+                        🔔 {% if notifications|length > 0 %}<span class="notification-badge" style="top:-10px; right:-10px;">{{ notifications|length }}</span>{% endif %}
                     </span>
                 </div>
             </header>

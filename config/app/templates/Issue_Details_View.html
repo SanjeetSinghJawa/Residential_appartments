@@ -3,129 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Removed FontAwesome Script -->
-    <title>Issue Details View</title>
+    <title>Issue Details | Residential Apartments</title>
     <style>
-        /* Base layout */
+        /* CSS Variables matched exactly to home.html */
+        :root {
+            --primary-color: #004a8b;
+            --secondary-color: #002f5a;
+            --background-color: #f4f7fa;
+            --card-bg: white;
+            --text-color: #2d3748;
+            --text-light: #718096;
+            --border-color: #e2e8f0;
+            --blue-badge: #3182ce;
+            --green-badge: #38a169;
+            --orange-badge: #d69e2e;
+            --transition-speed: 0.3s;
+        }
+
+        /* Standardized Font Stack from home.html */
         body { 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background-color: #f0f4f8; 
+            background-color: var(--background-color); 
+            color: var(--text-color);
             margin: 0; padding: 0; 
             display: flex; flex-direction: column; align-items: center;
+            line-height: 1.6;
         }
 
         /* Full Width Header */
         .full-width-header {
-            width: 100%; 
-            background-color: #fff; 
-            border-bottom: 1px solid #e1e8ed;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-            display: flex; 
-            justify-content: center;
-            padding: 15px 0; 
-            margin-bottom: 40px;
+            width: 100%; background-color: #fff; border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03); display: flex; 
+            justify-content: center; padding: 15px 0; margin-bottom: 40px;
         }
         
-        .header-inner { 
-            width: 95%; 
-            max-width: 1200px; /* Adjusted for better focus */
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-        }
-
-        .header-left-edge { flex: 1; display: flex; justify-content: flex-start; }
+        .header-inner { width: 95%; max-width: 1100px; display: flex; justify-content: space-between; align-items: center; }
+        .header-left-edge, .header-right-edge { flex: 1; display: flex; }
+        .header-right-edge { justify-content: flex-end; }
         .header-center { flex: 2; text-align: center; }
-        .header-right-edge { flex: 1; display: flex; justify-content: flex-end; }
 
-        .header-title { font-size: 1.4em; font-weight: bold; color: #333; }
+        .header-title { font-size: 1.3rem; font-weight: 700; color: var(--secondary-color); letter-spacing: -0.5px; }
         
         .back-link { 
-            font-size: 0.95em; 
-            text-decoration: none; 
-            color: #007bff; 
-            font-weight: 600;
+            font-size: 0.95rem; text-decoration: none; color: var(--primary-color); 
+            font-weight: 600; display: flex; align-items: center; gap: 6px; transition: transform 0.2s;
         }
+        .back-link:hover { transform: translateX(-3px); }
 
         /* Action Buttons */
         .btn-action {
-            padding: 10px 18px; border-radius: 6px; font-size: 0.85em; font-weight: 600;
-            text-decoration: none; cursor: pointer; transition: 0.2s; border: 1px solid #ddd;
-            display: inline-flex; align-items: center; gap: 8px;
-            background-color: #f8f9fa; color: #333;
+            padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; font-weight: 600;
+            text-decoration: none; cursor: pointer; transition: all 0.2s; border: 1px solid var(--border-color);
+            display: inline-flex; align-items: center; gap: 10px;
+            background-color: #fff; color: var(--text-color); box-shadow: 0 2px 4px rgba(0,0,0,0.04);
         }
-        .btn-action:hover { background-color: #e9ecef; }
+        .btn-action:hover { border-color: var(--primary-color); color: var(--primary-color); transform: translateY(-1px); }
 
         /* Centered Content Card */
-        .details-container { width: 90%; max-width: 750px; margin-bottom: 50px; }
+        .details-container { width: 90%; max-width: 800px; margin-bottom: 50px; }
         .details-content-card { 
-            background-color: #fff; border-radius: 12px; box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08); 
-            overflow: hidden; border: 1px solid #e1e8ed;
+            background-color: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); 
+            overflow: hidden; border: 1px solid var(--border-color);
         }
-        .card-body { padding: 40px; }
-        .issue-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
-        .issue-title { font-size: 1.9em; font-weight: 800; color: #1a1a1a; flex: 1; margin-right: 15px; }
+        .card-body { padding: 45px; }
+        .issue-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
+        .issue-title { font-size: 1.5rem; font-weight: 800; color: var(--secondary-color); line-height: 1.2; letter-spacing: -0.8px; }
         
-        .issue-description { color: #4a4a4a; line-height: 1.8; font-size: 1.1em; margin-bottom: 30px; white-space: pre-line; }
+        .issue-description { color: #4a5568; font-size: 1.1rem; margin-bottom: 35px; white-space: pre-line; }
         
         .issue-meta { 
-            font-size: 0.9em; color: #718096; padding-top: 20px; 
-            border-top: 1px solid #edf2f7; display: flex; justify-content: space-between; 
-            align-items: center;
+            font-size: 0.9rem; color: var(--text-light); padding-top: 25px; 
+            border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;
         }
-        .meta-item { display: flex; align-items: center; gap: 6px; }
-        .issue-image { width: 100%; max-height: 500px; object-fit: cover; display: block; border-top: 1px solid #eee; }
+        .meta-item { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .issue-image { width: 100%; max-height: 550px; object-fit: cover; display: block; border-top: 1px solid var(--border-color); }
 
-        /* Modal Styles */
+        /* Status Pills matched to Table style */
+        .status-pill { padding: 6px 14px; border-radius: 30px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+
+        /* Modal Styles with Fixed Header & Scrollable Content */
         .modal-overlay {
-            display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 74, 139, 0.4); backdrop-filter: blur(4px); animation: fadeIn 0.3s;
         }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .modal-content {
-            background: #fff; margin: 5% auto; border-radius: 12px; width: 95%; max-width: 600px; 
-            max-height: 80vh; display: flex; flex-direction: column; overflow: hidden;
+            background: #fff; margin: 4% auto; border-radius: 20px; width: 95%; max-width: 650px; 
+            max-height: 82vh; display: flex; flex-direction: column; overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-        .modal-header-fixed {
-            padding: 20px 25px; border-bottom: 1px solid #eee; 
-            display: flex; justify-content: space-between; align-items: center;
+        .modal-header-fixed { padding: 25px 30px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        .modal-body-scrollable { padding: 30px; overflow-y: auto; background-color: #f8fafc; flex-grow: 1; }
+        
+        .solution-item { 
+            background: #fff; padding: 25px; border-radius: 14px; margin-bottom: 20px; 
+            border: 1px solid var(--border-color); transition: transform 0.2s;
         }
-        .modal-body-scrollable { padding: 25px; overflow-y: auto; background-color: #f7fafc; flex-grow: 1; }
-        .solution-item { background: #fff; padding: 20px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; }
         
         .btn-vote { 
-            padding: 6px 16px; border-radius: 20px; text-decoration: none; font-size: 0.85em; 
-            border: 1px solid #38a169; color: #38a169; font-weight: bold; display: inline-flex; align-items: center; gap: 5px;
+            padding: 8px 18px; border-radius: 30px; text-decoration: none; font-size: 0.85rem; 
+            border: 1px solid var(--green-badge); color: var(--green-badge); font-weight: 700; 
+            display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;
         }
-        .score-pill { background: #edf2f7; padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: bold; }
-        .close-modal { cursor: pointer; font-size: 28px; color: #a0aec0; line-height: 1; }
-        .modal-footer { 
-            padding: 15px 25px; 
-            border-top: 1px solid #eee; 
-            background: #fff; 
-            display: flex; 
-            justify-content: flex-end; /* Aligns suggest button to the right */
-            gap: 10px;
-        }
+        .btn-vote:hover { background-color: var(--green-badge); color: #fff; }
+        
+        .score-pill { background: #edf2f7; padding: 7px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 700; color: var(--secondary-color); }
+        .close-modal { cursor: pointer; font-size: 2rem; color: var(--text-light); line-height: 1; transition: color 0.2s; }
+        .close-modal:hover { color: var(--secondary-color); }
+
+        .modal-footer { padding: 20px 30px; border-top: 1px solid #f1f5f9; background: #fff; display: flex; justify-content: flex-end; flex-shrink: 0; }
 
         .btn-suggest-modal { 
-            background-color: #007bff; 
-            color: white !important; /* Overrides default link color */
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            transition: background-color 0.2s ease;
+            background-color: var(--primary-color); color: #fff !important; 
+            border: none; padding: 14px 24px; border-radius: 12px; font-weight: 700;
         }
-
-        .btn-suggest-modal:hover { 
-            background-color: #0056b3; 
-            text-decoration: none;
-        }
-
-        .plus-icon {
-            font-size: 1.2em;
-            font-weight: bold;
-            line-height: 1;
-        }       
     </style>
 </head>
 <body>
@@ -133,16 +125,12 @@
     <header class="full-width-header">
         <div class="header-inner">
             <div class="header-left-edge">
-                <a href="{% url 'home' %}" class="back-link">
-                    &#8592; Back
-                </a>
+                <a href="{% url 'home' %}" class="back-link"><span>←</span> Dashboard</a>
             </div>
             <div class="header-center">
                 <span class="header-title">Issue Details</span>
             </div>
-            <div class="header-right-edge">
-                <!-- Optional placeholder for right side balance -->
-            </div>
+            <div class="header-right-edge"></div>
         </div>
     </header>
 
@@ -150,24 +138,22 @@
         <div class="details-content-card">
             <div class="card-body">
                 <div class="issue-header-row">
-                    <div style="display: flex; flex-direction: column; gap: 5px;">
-                        <div class="issue-title">{{ issue.title }}</div>
-                        <!-- Dynamic Status Badge -->
-                        <span style="
-                            display: inline-block; 
-                            padding: 4px 12px; 
-                            border-radius: 20px; 
-                            font-size: 0.75em; 
-                            font-weight: bold; 
-                            width: fit-content;
-                            {% if issue.status == 'Resolved' %} background: #c6f6d5; color: #22543d; 
-                            {% elif issue.status == 'In Review' %} background: #feebc8; color: #744210; 
-                            {% else %} background: #edf2f7; color: #2d3748; {% endif %}
-                        ">
-                             {{ issue.status }}
-                        </span>
+                    <div style="display: flex; flex-direction: column; gap: 10px; flex: 1;">
+                        <!-- Container for Pill + Title on one row -->
+                        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                            <h1 class="issue-title" style="margin: 0;">{{ issue.title }}</h1>
+                            <span class="status-pill" style="
+                                white-space: nowrap;
+                                {% if issue.status == 'Resolved' %} background: #def7ec; color: #03543f; 
+                                {% elif issue.status == 'In Review' %} background: #fef3c7; color: #92400e; 
+                                {% else %} background: #e1effe; color: #1e429f; {% endif %}
+                            ">
+                                 {{ issue.status }}
+                            </span>
+                        </div>
                     </div>
-                    <button class="btn-action" onclick="toggleModal()">
+                    
+                    <button class="btn-action" onclick="toggleModal()" style="flex-shrink: 0;">
                         <span>💡</span> Solutions ({{ solutions|length }})
                     </button>
                 </div>
@@ -176,12 +162,12 @@
 
                 <div class="issue-meta">
                     <span class="meta-item">
-                        <span>&#128100;</span> 
-                        <strong>{{ issue.reported_by_id.full_name|default:issue.reported_by_id.email }}</strong>
+                        <span style="opacity: 0.6;">👤</span> 
+                        <span>Raised by <strong>{{ issue.reported_by_id.full_name|default:issue.reported_by_id.email }}</strong></span>
                     </span>
                     <span class="meta-item">
-                        <span>&#128197;</span> 
-                        {{ issue.reported_date|date:"M d, Y" }}
+                        <span style="opacity: 0.6;">📅</span> 
+                        {{ issue.reported_date|date:"F d, Y" }}
                     </span>
                 </div>
             </div>
@@ -191,47 +177,45 @@
         </div>
     </main>
 
+    <!-- Solutions Modal -->
     <div id="solutionsModal" class="modal-overlay">
         <div class="modal-content">
-            <!-- Fixed Header -->
             <div class="modal-header-fixed">
-                <h2 style="margin: 0; font-size: 1.25em; color: #1a202c;">
+                <h2 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--secondary-color);">
                     Proposed Solutions ({{ solutions|length }})
                 </h2>
-                <span class="close-modal" onclick="toggleModal()" title="Close">&times;</span>
+                <span class="close-modal" onclick="toggleModal()">&times;</span>
             </div>
             
-            <!-- Scrollable Content -->
             <div class="modal-body-scrollable">
                 {% for solution in solutions %}
-                <div class="solution-item" style="{% if solution.upvotes >= 5 %}border: 2px solid #38a169; background: #f0fff4;{% endif %}">
+                <div class="solution-item" style="{% if solution.upvotes >= 5 %}border: 2px solid var(--green-badge); background: #f0fff4;{% endif %}">
                     {% if solution.upvotes >= 5 %}
-                        <div style="color: #38a169; font-size: 0.75em; font-weight: bold; margin-bottom: 5px;">
-                            &#10003; APPROVED SOLUTION
+                        <div style="color: var(--green-badge); font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">
+                            ✓ Community Approved
                         </div>
                     {% endif %}
-                    <div style="font-weight: bold; color: #2d3748; margin-bottom: 8px;">{{ solution.title }}</div>
-                        <p style="font-size: 0.95em; color: #4a5568; margin: 0; line-height: 1.5;">{{ solution.description }}</p>
-                        
-                        <div class="voting-actions" style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
-                            <a href="{% url 'vote_solution' solution.id 'upvote' %}" class="btn-vote">
-                                <span>▲</span> Upvote
-                            </a>
-                            <span class="score-pill">Score: {{ solution.upvotes|default:0 }}</span>
-                        </div>
+                    <div style="font-weight: 700; color: var(--secondary-color); font-size: 1.1rem; margin-bottom: 10px;">{{ solution.title }}</div>
+                    <p style="font-size: 0.95rem; color: #4a5568; margin: 0; line-height: 1.6;">{{ solution.description }}</p>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
+                        <a href="{% url 'vote_solution' solution.id 'upvote' %}" class="btn-vote">
+                            <span>▲</span> Upvote
+                        </a>
+                        <span class="score-pill">Score: {{ solution.upvotes|default:0 }}</span>
                     </div>
+                </div>
                 {% empty %}
-                    <div style="text-align: center; color: #718096; padding: 60px 20px;">
-                        <div style="font-size: 3em; margin-bottom: 10px; opacity: 0.5;">&#128161;</div>
-                        <p>No solutions suggested yet. Be the first to provide one!</p>
-                    </div>
+                <div style="text-align: center; padding: 80px 20px;">
+                    <div style="font-size: 3rem; margin-bottom: 20px; opacity: 0.2;">💡</div>
+                    <p style="color: var(--text-light); font-weight: 500;">No solutions suggested yet.</p>
+                </div>
                 {% endfor %}
             </div>
     
-            <!-- Fixed Footer with Suggest Action -->
             <div class="modal-footer">
                 <a href="{% url 'suggest_solution' issue.id %}" class="btn-action btn-suggest-modal">
-                    <span class="plus-icon">+</span> Suggest New Solution
+                    + Suggest New Solution
                 </a>
             </div>
         </div>
@@ -240,15 +224,14 @@
     <script>
         function toggleModal() {
             const modal = document.getElementById('solutionsModal');
-            modal.style.display = (modal.style.display === 'block') ? 'none' : 'block';
+            const display = modal.style.display === 'block' ? 'none' : 'block';
+            modal.style.display = display;
+            document.body.style.overflow = display === 'block' ? 'hidden' : 'auto';
         }
 
-        // Close modal when clicking outside of it
         window.onclick = function(event) {
             const modal = document.getElementById('solutionsModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
+            if (event.target == modal) { toggleModal(); }
         }
     </script>
 </body>
