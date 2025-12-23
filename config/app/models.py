@@ -39,6 +39,8 @@ class Solution(models.Model):
     downvotes = models.IntegerField(default=0)
     suggested_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default='Pending') # 'Pending' or 'Accepted'
+    is_voting_enabled = models.BooleanField(default=False) # NEW: Voting lock
+
 
     # NEW FIELD: Tracks which users have already cast a vote on this specific solution
     voted_by = models.ManyToManyField(UserDetails, related_name='voted_solutions', blank=True)

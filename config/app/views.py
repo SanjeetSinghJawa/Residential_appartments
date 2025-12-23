@@ -25,6 +25,16 @@ def vote_solution(request, solution_id, vote_type):
     if solution.voted_by.filter(id=user.id).exists():
         return redirect('issue_details', issue_id=solution.issue.id)
     
+    # NEW RULE 3: The person who suggested the SOLUTION cannot vote for their own solution
+    if solution.suggested_by == user:
+        # Optional: return redirect with a message
+        return redirect('issue_details', issue_id=solution.issue.id)
+    
+    # NEW RULE: Voting must be requested by creator first
+    if not solution.is_voting_enabled:
+        # Prevent voting if not yet requested
+        return redirect('issue_details', issue_id=solution.issue.id)
+    
     if vote_type == 'upvote':
         solution.upvotes += 1
         solution.voted_by.add(user) # Record the vote
@@ -38,6 +48,9 @@ def vote_solution(request, solution_id, vote_type):
             issue = solution.issue
             issue.status = 'Resolved'
             issue.save()
+
+            # This ensures they no longer appear in anyone's notification list
+            SiteNotification.objects.filter(issue=issue).delete()
             
     elif vote_type == 'downvote':
         solution.downvotes = F('downvotes') + 1
@@ -206,3 +219,28 @@ def home(request):
         except UserDetails.DoesNotExist:
             return redirect('login')
     return redirect('login')
+
+def request_vote(request, solution_id):
+    solution = get_object_or_404(Solution, id=solution_id)
+    user_id = request.session.get('user_id')
+    user = get_object_or_404(UserDetails, id=user_id)
+
+    if solution.issue.reported_by_id != user or solution.issue.status == 'Resolved':
+        return redirect('issue_details', issue_id=solution.issue.id)
+
+    # UNLOCK VOTING: Set the flag to True
+    solution.is_voting_enabled = True
+    solution.save()
+
+    # Create a site-wide notification
+    SiteNotification.objects.create(
+        title="Vote Requested!",
+        message=f"The creator of '{solution.issue.title}' requests your vote for solution: {solution.title}",
+        issue=solution.issue
+    )
+    
+    # Optional: You could use Django messages to confirm the request was sent
+    # messages.success(request, "Vote request notification sent to the community!")
+
+    return redirect('issue_details', issue_id=solution.issue.id)
+

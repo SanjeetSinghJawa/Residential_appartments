@@ -30,6 +30,7 @@ urlpatterns = [
     path('issue/<str:issue_id>/', views.issue_details_view, name='issue_details'),
     path('issue/<str:issue_id>/suggest-solution/', views.suggest_solution, name='suggest_solution'),
     path('solution/<int:solution_id>/vote/<str:vote_type>/', views.vote_solution, name='vote_solution'),
+    path('solution/<int:solution_id>/request-vote/', views.request_vote, name='request_vote'),
     path('admin/', admin.site.urls),
 ]
 

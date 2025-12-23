@@ -196,34 +196,64 @@
                         </div>
                     {% endif %}
                     <div style="font-weight: 700; color: var(--secondary-color); font-size: 1.1rem; margin-bottom: 10px;">{{ solution.title }}</div>
+                    <!-- NEW: Proposer Details -->
+                    <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                        <span style="opacity: 0.7;">💡 Proposed by</span>
+                        <strong style="color: var(--primary-color);">
+                            {{ solution.suggested_by.full_name|default:solution.suggested_by.email }}
+                        </strong>
+                        <span>• {{ solution.suggested_date|date:"M d, Y" }}</span>
+                    </div>
                     <p style="font-size: 0.95rem; color: #4a5568; margin: 0; line-height: 1.6;">{{ solution.description }}</p>
-                    
-                    <!-- <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-                        <a href="{% url 'vote_solution' solution.id 'upvote' %}" class="btn-vote">
-                            <span>▲</span> Upvote
-                        </a>
-                        <span class="score-pill">Score: {{ solution.upvotes|default:0 }}</span>
-                    </div> -->
-                    <!-- Inside the modal-body-scrollable for loop -->
                     <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-                        
-                        <!-- HIDE BUTTON IF: User is Issue Creator OR User already voted -->
+    
+                        <!-- Case 1: If current user is the ISSUE CREATOR -->
                         {% if issue.reported_by_id.id == request.session.user_id %}
+                            {% if issue.status != 'Resolved' %}
+                                <a href="{% url 'request_vote' solution.id %}" class="btn-vote" style="border-color: var(--primary-color); color: var(--primary-color);">
+                                    📢 Request Vote
+                                </a>
+                            {% else %}
+                                <span style="font-size: 0.8rem; color: var(--green-badge); font-weight: 700;">
+                                    Voting : Can't vote for closed Issue
+                                </span>
+                            {% endif %}
+                    
+                        <!-- Case 2: If current user is the SOLUTION PROVIDER -->
+                        {% elif solution.suggested_by.id == request.session.user_id %}
                             <span style="font-size: 0.8rem; color: var(--text-light); font-style: italic;">
-                                Creator cannot vote
+                                Voting : Can't vote for your own Solution
                             </span>
+                    
+                        <!-- Case 3: If user already voted -->
                         {% elif user in solution.voted_by.all %}
                             <span style="color: var(--green-badge); font-weight: 700; font-size: 0.85rem;">
-                                ✓ Already Voted
+                                Voting : Already Voted
                             </span>
+                    
+                        <!-- Case 4 & 5: Other Neighbors (Voting Lock Logic) -->
                         {% else %}
-                            <a href="{% url 'vote_solution' solution.id 'upvote' %}" class="btn-vote">
-                                <span>▲</span> Upvote
-                            </a>
+                            {% if issue.status != 'Resolved' %}
+                                {% if solution.is_voting_enabled %}
+                                    <!-- Only allow vote if Creator has enabled it -->
+                                    <a href="{% url 'vote_solution' solution.id 'upvote' %}" class="btn-vote">
+                                        <span>▲</span> Upvote
+                                    </a>
+                                {% else %}
+                                    <!-- Locked state until Creator acts -->
+                                    <span style="font-size: 0.8rem; color: var(--text-light); font-style: italic;">
+                                        Voting : Not enabled yet by Creator
+                                    </span>
+                                {% endif %}
+                            {% else %}
+                                <!-- Voting Closed because issue is Resolved -->
+                                <span style="font-size: 0.8rem; color: var(--text-light);">Voting Closed</span>
+                            {% endif %}
                         {% endif %}
-
+                    
                         <span class="score-pill">Score: {{ solution.upvotes|default:0 }}</span>
                     </div>
+                    
                 </div>
                 {% empty %}
                 <div style="text-align: center; padding: 80px 20px;">
@@ -234,9 +264,12 @@
             </div>
     
             <div class="modal-footer">
-                <a href="{% url 'suggest_solution' issue.id %}" class="btn-action btn-suggest-modal">
-                    + Suggest New Solution
-                </a>
+                {% if issue.reported_by_id.id != request.session.user_id %}
+                    <!-- Only non-creators can suggest solutions -->
+                    <a href="{% url 'suggest_solution' issue.id %}" class="btn-action btn-suggest-modal">
+                        + Suggest New Solution
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>
