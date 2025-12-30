@@ -34,19 +34,24 @@ class Solution(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='solutions')
-    suggested_by = models.ForeignKey(UserDetails, on_delete=models.CASCADE)
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
     suggested_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, default='Pending') # 'Pending' or 'Accepted'
     is_voting_enabled = models.BooleanField(default=False) # NEW: Voting lock
+    is_ai_generated = models.BooleanField(default=False) # **CRITICAL: New field to identify AI solutions**
+    is_ai = models.BooleanField(default=False)  # NEW: Tracks if this is an AI solution
+    confidence = models.FloatField(default=0.0) 
+    suggested_by = models.ForeignKey(UserDetails, on_delete=models.SET_NULL, null=True, blank=True)
 
 
     # NEW FIELD: Tracks which users have already cast a vote on this specific solution
     voted_by = models.ManyToManyField(UserDetails, related_name='voted_solutions', blank=True)
 
     def __str__(self):
-        return self.title
+        # Update the string representation to reflect the source
+        source = "AI" if self.is_ai_generated else "Human"
+        return f"{self.title} ({source})"
     
 # New model for site-wide notifications
 class SiteNotification(models.Model):

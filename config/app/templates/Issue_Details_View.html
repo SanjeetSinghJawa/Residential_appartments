@@ -189,76 +189,79 @@
             
             <div class="modal-body-scrollable">
                 {% for solution in solutions %}
-                <div class="solution-item" style="{% if solution.upvotes >= 5 %}border: 2px solid var(--green-badge); background: #f0fff4;{% endif %}">
+                <!-- Single style for both Community and AI solutions -->
+                <div class="solution-item" style="margin-bottom: 20px; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; {% if solution.upvotes >= 5 %}border: 2px solid var(--green-badge); background: #f0fff4;{% endif %} {% if solution.is_ai %}background: #f8faff; border-left: 4px solid #3b82f6;{% endif %}">
+                    
+                    <!-- Badge for Community Approval -->
                     {% if solution.upvotes >= 5 %}
                         <div style="color: var(--green-badge); font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px;">
                             ✓ Community Approved
                         </div>
                     {% endif %}
+
+                    <!-- Badge for AI Recommendation -->
+                    {% if solution.is_ai %}
+                        <div style="color: #3b82f6; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 4px;">
+                            ✨ AI Recommended <span style="text-transform: none; font-weight: 600; opacity: 0.8;">({{ solution.confidence|floatformat:0 }}% Confidence)</span>
+                        </div>
+                    {% endif %}
+
                     <div style="font-weight: 700; color: var(--secondary-color); font-size: 1.1rem; margin-bottom: 10px;">{{ solution.title }}</div>
-                    <!-- NEW: Proposer Details -->
+                    
+                    <!-- Proposer Details (Handles both User and AI) -->
                     <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
                         <span style="opacity: 0.7;">💡 Proposed by</span>
                         <strong style="color: var(--primary-color);">
-                            {{ solution.suggested_by.full_name|default:solution.suggested_by.email }}
+                            {% if solution.is_ai %}
+                                SafeHaven AI
+                            {% else %}
+                                {{ solution.suggested_by.full_name|default:solution.suggested_by.email }}
+                            {% endif %}
                         </strong>
-                        <span>• {{ solution.suggested_date|date:"M d, Y" }}</span>
+                        {% if not solution.is_ai %}
+                            <span>• {{ solution.suggested_date|date:"M d, Y" }}</span>
+                        {% endif %}
                     </div>
+
                     <p style="font-size: 0.95rem; color: #4a5568; margin: 0; line-height: 1.6;">{{ solution.description }}</p>
+                    
                     <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-    
-                        <!-- Case 1: If current user is the ISSUE CREATOR -->
+
+                        <!-- UNIFIED VOTING LOGIC -->
                         {% if issue.reported_by_id.id == request.session.user_id %}
                             {% if issue.status != 'Resolved' %}
-                                <!-- NEW: Check if voting is already enabled/requested -->
                                 {% if not solution.is_voting_enabled %}
-                                    <a href="{% url 'request_vote' solution.id %}" class="btn-vote" style="border-color: var(--primary-color); color: var(--primary-color);">
+                                    <a href="{% url 'request_vote' solution.id %}" class="btn-vote" style="border-color: var(--primary-color); color: var(--primary-color); text-decoration: none; font-size: 0.85rem; font-weight: 600; border: 1px solid; padding: 5px 10px; border-radius: 20px;">
                                         📢 Request Vote
                                     </a>
                                 {% else %}
-                                    <span style="font-size: 0.85rem; color: var(--blue-badge); font-weight: 600;">
-                                        📢 Vote Requested
-                                    </span>
+                                    <span style="font-size: 0.85rem; color: var(--blue-badge); font-weight: 600;">📢 Vote Requested</span>
                                 {% endif %}
                             {% else %}
-                                <span style="font-size: 0.8rem; color: var(--green-badge); font-weight: 700;">
-                                    Voting : Can't vote for closed Issue
-                                </span>
+                                <span style="font-size: 0.8rem; color: var(--green-badge); font-weight: 700;">Voting Closed</span>
                             {% endif %}
                     
-                        <!-- Case 2: If current user is the SOLUTION PROVIDER -->
-                        {% elif solution.suggested_by.id == request.session.user_id %}
-                            <span style="font-size: 0.8rem; color: var(--text-light); font-style: italic;">
-                                Voting : Can't vote for your own Solution
-                            </span>
+                        {% elif solution.suggested_by.id == request.session.user_id and not solution.is_ai %}
+                            <span style="font-size: 0.8rem; color: var(--text-light); font-style: italic;">Your Solution</span>
                     
-                        <!-- Case 3: If user already voted -->
                         {% elif user in solution.voted_by.all %}
-                            <span style="color: var(--green-badge); font-weight: 700; font-size: 0.85rem;">
-                                Voting : Already Voted
-                            </span>
+                            <span style="color: var(--green-badge); font-weight: 700; font-size: 0.85rem;">✓ Already Voted</span>
                     
-                        <!-- Case 4 & 5: Other Neighbors (Voting Lock Logic) -->
                         {% else %}
                             {% if issue.status != 'Resolved' %}
                                 {% if solution.is_voting_enabled %}
-                                    <!-- Only allow vote if Creator has enabled it -->
-                                    <a href="{% url 'vote_solution' solution.id 'upvote' %}" class="btn-vote">
+                                    <a href="{% url 'vote_solution' solution.id 'upvote' %}" class="btn-vote" style="text-decoration: none; color: var(--primary-color); border: 1px solid; padding: 5px 10px; border-radius: 20px; font-size: 0.85rem;">
                                         <span>▲</span> Upvote
                                     </a>
                                 {% else %}
-                                    <!-- Locked state until Creator acts -->
-                                    <span style="font-size: 0.8rem; color: var(--text-light); font-style: italic;">
-                                        Voting : Not enabled yet by Creator
-                                    </span>
+                                    <span style="font-size: 0.8rem; color: var(--text-light); font-style: italic;">Voting Not Enabled</span>
                                 {% endif %}
                             {% else %}
-                                <!-- Voting Closed because issue is Resolved -->
                                 <span style="font-size: 0.8rem; color: var(--text-light);">Voting Closed</span>
                             {% endif %}
                         {% endif %}
                     
-                        <span class="score-pill">Score: {{ solution.upvotes|default:0 }}</span>
+                        <span class="score-pill" style="font-size: 0.85rem; font-weight: 800; background: #f1f5f9; padding: 4px 12px; border-radius: 20px;">Score: {{ solution.upvotes|default:0 }}</span>
                     </div>
                     
                 </div>
@@ -269,11 +272,10 @@
                 </div>
                 {% endfor %}
             </div>
-    
-            <div class="modal-footer">
-                {% if issue.reported_by_id.id != request.session.user_id %}
-                    <!-- Only non-creators can suggest solutions -->
-                    <a href="{% url 'suggest_solution' issue.id %}" class="btn-action btn-suggest-modal">
+
+            <div class="modal-footer" style="padding: 20px; border-top: 1px solid #eee;">
+                {% if issue.reported_by_id.id != request.session.user_id and issue.status != 'Resolved' %}
+                    <a href="{% url 'suggest_solution' issue.id %}" class="btn-action btn-suggest-modal" style="display: block; text-align: center; background: var(--primary-color); color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700;">
                         + Suggest New Solution
                     </a>
                 {% endif %}

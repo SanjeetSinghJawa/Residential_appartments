@@ -11,7 +11,51 @@ from openai import OpenAI
 import json
 from django.conf import settings
 
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.core.exceptions import ObjectDoesNotExist
+
+
 client = OpenAI(api_key=settings.OPEN_API_KEY)
+
+@receiver(post_save, sender=Issue)
+def ai_suggest_solution(sender, instance, created, **kwargs):
+    if created:
+        try:
+            # 1. Get the AI User (Make sure this email exists in your UserDetails table!)
+            ai_user = UserDetails.objects.get(email="ai_assistant@apartment.com")
+
+            # 2. Call OpenAI for a suggested solution
+            # Crafted a better prompt for more specific results
+            prompt = f"Provide one concise, practical solution for the following apartment maintenance issue title: '{instance.title}'. Description: '{instance.description}'"
+            
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages="pipe is leaking"
+            )
+            ai_reply = response.choices[0].message.content.strip() # Strip whitespace/newlines
+
+            # 3. Create the Solution automatically
+            Solution.objects.create(
+                title=f"AI-Generated Solution",
+                description=ai_reply,
+                issue=instance,
+                suggested_by=ai_user,
+                status='Pending',
+                is_ai_generated=True # **CRITICAL: Set the new field to True**
+            )
+            
+            # 4. Update Issue status to 'In Review' as per your flow
+            instance.status = 'In Review'
+            instance.save()
+            print(f"AI successfully suggested a solution for Issue ID {instance.id}")
+
+        except ObjectDoesNotExist:
+            print("ERROR: AI User profile not found in UserDetails. Please create a user with email 'ai_assistant@apartment.com'.")
+        except Exception as e:
+            # Catch other potential errors like API connection issues
+            print(f"AI Suggestion failed due to API error: {str(e)}")
+            
 
 def chat_api(request):
     if request.method == "POST":
@@ -182,18 +226,86 @@ def reportIssue(request):
 
 def issue_details_view(request, issue_id):
     issue = get_object_or_404(Issue, id=issue_id)
-    solutions = Solution.objects.filter(issue=issue).order_by('-upvotes', '-suggested_date')
+    community_solutions = Solution.objects.filter(issue=issue, is_ai=False).order_by('-upvotes')
+    ai_solutions_queryset = Solution.objects.filter(issue=issue, is_ai=True)
     
-    # NEW: Get the current user object to check voting status in template
+    # Initialize debug variables
+    debug_data = {
+        "prompt_created": None,
+        "raw_ai_response": None,
+        "is_debug_mode": settings.DEBUG
+    }
+
+    if ai_solutions_queryset.exists():
+        ai_solutions = list(ai_solutions_queryset.values('title', 'description', 'confidence'))
+    else:
+        ai_solutions = []
+        try:
+            # 1. Debug: Create and log the prompt
+            prompt = (
+                f"Suggest 1 solutions for: {issue.title}. Description: {issue.description}. "
+                "Return as a JSON list with the following keys: "
+                "'title', 'description', 'confidence' (this MUST be an integer between 0 and 100, e.g., 85)."
+            )
+            debug_data["prompt_created"] = prompt
+            print(f"DEBUG [AI Prompt]: {prompt}") # Visible in terminal
+
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                response_format={ "type": "json_object" },
+                messages=[{"role": "user", "content": prompt}]
+            )
+            
+            # 2. Debug: Log the raw response
+            raw_content = response.choices[0].message.content
+            debug_data["raw_ai_response"] = raw_content
+            print(f"DEBUG [AI Response]: {raw_content}") # Visible in terminal
+
+            data = json.loads(raw_content)
+            # FIX: The AI output is {"solutions": [...]}, so we extract the list
+            new_solutions_list = data.get("solutions", data)
+
+            for item in new_solutions_list:
+                # Safely convert 'confidence' to a number
+                raw_confidence = item.get('confidence', 0)
+                
+                # Simple conversion logic for strings like "High" or "Medium"
+                if isinstance(raw_confidence, str):
+                    mapping = {"High": 90, "Medium": 50, "Low": 20}
+                    # Get the mapped number or default to 0 if it's an unrecognized string
+                    processed_confidence = mapping.get(raw_confidence, 0)
+                else:
+                    processed_confidence = raw_confidence
+
+                Solution.objects.create(
+                    issue=issue,
+                    title=item['title'],
+                    description=item['description'],
+                    confidence=processed_confidence,  # Now guaranteed to be a number
+                    is_ai=True,
+                    suggested_by=None
+                )
+            ai_solutions = new_solutions_list
+
+        except Exception as e:
+            print(f"ERROR [AI Generation]: {str(e)}")
+            ai_solutions = []
+
+    user_id = request.session.get('user_id')
+    user = UserDetails.objects.filter(id=user_id).first()
+    
+    # 1. Fetch ALL solutions (Community + AI) in one go
+    # Order by 'is_ai' descending so AI always appears first, then by upvotes
+    all_solutions = Solution.objects.filter(issue=issue).order_by('-is_ai', '-upvotes')
+
     user_id = request.session.get('user_id')
     user = UserDetails.objects.filter(id=user_id).first()
     
     return render(request, 'Issue_Details_View.html', {
         'issue': issue,
-        'solutions': solutions,
-        'user': user  # Added this to the context
+        'solutions': all_solutions, # Pass the combined list
+        'user': user,
     })
-
 
 def suggest_solution(request, issue_id):
     issue = get_object_or_404(Issue, id=issue_id)
