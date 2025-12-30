@@ -2,6 +2,51 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.http import HttpResponse
 from .models import Solution, UserDetails, Issue, SiteNotification
 from django.db.models import F
+from django.http import JsonResponse
+from chatbot.utils import simple_chatbot_view
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from openai import OpenAI
+import json
+from django.conf import settings
+
+client = OpenAI(api_key=settings.OPEN_API_KEY)
+
+def chat_api(request):
+    if request.method == "POST":
+        user_message = request.POST.get("message")
+        
+        try:
+            # Call OpenAI SDK (2025 version)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": user_message}]
+            )
+            bot_reply = response.choices[0].message.content
+            
+            # Return JSON instead of rendering a template
+            return JsonResponse({
+                'status': 'success',
+                'reply': bot_reply
+            })
+            
+        except Exception as e:
+            # Return JSON error so the JavaScript can handle it
+            return JsonResponse({
+                'status': 'error',
+                'reply': f"I'm having trouble connecting right now. ({str(e)})"
+            }, status=500)
+
+    # If someone tries to access via GET, return an error or redirect
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+def chatbot(request):
+    if request.method == 'POST':
+        user_message = request.POST.get('message', '')
+        bot_response = simple_chatbot_view(user_message)
+        return JsonResponse({'response': bot_response})
+    return render(request, 'chatbot.html')
 
 def vote_solution(request, solution_id, vote_type):
     """

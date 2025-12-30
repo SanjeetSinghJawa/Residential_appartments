@@ -136,6 +136,65 @@
             font-weight: 600;
             color: var(--secondary-color);
         }
+
+        /* Floating Chatbot Overlay */
+        .chat-widget {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 2500;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Chat Button */
+        .chat-trigger {
+            width: 60px; height: 60px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            color: white; font-size: 1.5rem; transition: transform 0.3s;
+        }
+        .chat-trigger:hover { transform: scale(1.1); }
+
+        /* Chat Window */
+        .chat-container {
+            position: absolute; bottom: 80px; right: 0;
+            width: 350px; height: 450px;
+            background: white; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: none; flex-direction: column; overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .chat-container.is-open { display: flex; }
+
+        .chat-header {
+            background: var(--primary-color); color: white;
+            padding: 15px 20px; font-weight: 600;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .chat-messages {
+            flex-grow: 1; padding: 15px;
+            overflow-y: auto; background: #f8fafc;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .chat-input-area {
+            padding: 15px; border-top: 1px solid var(--border-color);
+            display: flex; gap: 8px; background: white;
+        }
+
+        .chat-input {
+            flex: 1; border: 1px solid var(--border-color);
+            border-radius: 20px; padding: 8px 15px; outline: none;
+        }
+
+        /* Message Bubbles */
+        .msg { max-width: 80%; padding: 8px 12px; border-radius: 12px; font-size: 0.9rem; }
+        .msg.user { align-self: flex-end; background: var(--primary-color); color: white; }
+        .msg.ai { align-self: flex-start; background: #edf2f7; color: var(--text-color); }
+
     </style>
 </head>
 <body>
@@ -158,6 +217,9 @@
                     <span class="nav-icon">🔔</span>
                     {% if notifications|length > 0 %}<span class="notification-badge">{{ notifications|length }}</span>{% endif %}
                     Notifications
+                </a>
+                <a href="#" class="nav-link" onclick="event.preventDefault(); toggleChat();">
+                    <span class="nav-icon">🤖</span> Chatbot
                 </a>
             </nav>
         </aside>
@@ -320,6 +382,23 @@
             </div>
         </div>
     </div>
+    <div class="chat-widget">
+        <div class="chat-container" id="chatContainer">
+            <div class="chat-header">
+                <span>Apartment Assistant</span>
+                <span style="cursor:pointer;" onclick="toggleChat()">×</span>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <div class="msg ai">Hello! How can I help you with your apartment queries today?</div>
+            </div>
+            <form class="chat-input-area" id="chatForm">
+                {% csrf_token %}
+                <input type="text" class="chat-input" id="chatInput" placeholder="Ask something..." required>
+                <button type="submit" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">📩</button>
+            </form>
+        </div>
+        <div class="chat-trigger" onclick="toggleChat()">🤖</div>
+    </div>
 
 
     <script>
@@ -350,6 +429,38 @@
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             event.currentTarget.classList.add('active');
         }
+        function toggleChat() {
+            document.getElementById('chatContainer').classList.toggle('is-open');
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = document.getElementById('chatInput');
+            const msg = input.value;
+            if(!msg) return;
+
+            // Append User Message
+            const messages = document.getElementById('chatMessages');
+            messages.innerHTML += `<div class="msg user">${msg}</div>`;
+            input.value = '';
+            messages.scrollTop = messages.scrollHeight;
+
+            // Send AJAX to chat_api
+            fetch("{% url 'chat_api' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({'message': msg})
+            })
+            .then(response => response.json())
+            .then(data => {
+                messages.innerHTML += `<div class="msg ai">${data.reply}</div>`;
+                messages.scrollTop = messages.scrollHeight;
+            });
+        });
+
 
     </script>
 </body>

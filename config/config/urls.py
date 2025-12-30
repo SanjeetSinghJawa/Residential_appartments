@@ -31,6 +31,8 @@ urlpatterns = [
     path('issue/<str:issue_id>/suggest-solution/', views.suggest_solution, name='suggest_solution'),
     path('solution/<int:solution_id>/vote/<str:vote_type>/', views.vote_solution, name='vote_solution'),
     path('solution/<int:solution_id>/request-vote/', views.request_vote, name='request_vote'),
+    path("chatbot/", views.chatbot, name='chatbot'),  # Include chatbot app URLs
+    path('chat_api/', views.chat_api, name='chat_api'),
     path('admin/', admin.site.urls),
 ]
 

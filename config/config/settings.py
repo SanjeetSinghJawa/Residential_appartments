@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 # settings.py
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+OPEN_API_KEY = os.getenv('OPEN_API_KEY')
+
 
 
 

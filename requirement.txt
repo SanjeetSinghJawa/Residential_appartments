@@ -1,0 +1,5 @@
+django
+openai
+djangorestframework
+gunicorn
+python-dotenv

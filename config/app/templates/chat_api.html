@@ -1,0 +1,28 @@
+<!-- chatbot.html -->
+<div style="max-width: 600px; margin: 50px auto; font-family: sans-serif;">
+    
+    <!-- Chat Display Area -->
+    <div id="chat-window" style="border: 1px solid #ccc; padding: 20px; height: 300px; background: #f9f9f9; overflow-y: auto; margin-bottom: 20px;">
+        {% if user_message %}
+            <p><strong>You:</strong> {{ user_message }}</p>
+        {% endif %}
+        
+        {% if reply %}
+            <p><strong>AI:</strong> {{ reply }}</p>
+        {% else %}
+            <p><i>Ask a question below to start the conversation...</i></p>
+        {% endif %}
+    </div>
+
+    <!-- Standard POST Form -->
+    <form method="POST" action="{% url 'chat_api' %}">
+        {% csrf_token %}
+        <div style="display: flex; gap: 10px;">
+            <input type="text" name="message" placeholder="Type your message..." required style="flex: 1; padding: 10px;">
+            <button type="submit" style="padding: 10px 20px; cursor: pointer; background-color: #007bff; color: white; border: none;">
+                Send
+            </button>
+        </div>
+    </form>
+
+</div>
