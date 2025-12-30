@@ -226,76 +226,50 @@ def reportIssue(request):
 
 def issue_details_view(request, issue_id):
     issue = get_object_or_404(Issue, id=issue_id)
-    community_solutions = Solution.objects.filter(issue=issue, is_ai=False).order_by('-upvotes')
-    ai_solutions_queryset = Solution.objects.filter(issue=issue, is_ai=True)
     
-    # Initialize debug variables
-    debug_data = {
-        "prompt_created": None,
-        "raw_ai_response": None,
-        "is_debug_mode": settings.DEBUG
-    }
+    # 1. Check if AI solutions already exist
+    ai_exists = Solution.objects.filter(issue=issue, is_ai=True).exists()
 
-    if ai_solutions_queryset.exists():
-        ai_solutions = list(ai_solutions_queryset.values('title', 'description', 'confidence'))
-    else:
-        ai_solutions = []
+    if not ai_exists:
         try:
-            # 1. Debug: Create and log the prompt
             prompt = (
-                f"Suggest 1 solutions for: {issue.title}. Description: {issue.description}. "
-                "Return as a JSON list with the following keys: "
-                "'title', 'description', 'confidence' (this MUST be an integer between 0 and 100, e.g., 85)."
+                f"Suggest 1 solution for: {issue.title}. Description: {issue.description}. "
+                "Return ONLY a JSON list with: 'title', 'description', 'confidence' (0-100)."
             )
-            debug_data["prompt_created"] = prompt
-            print(f"DEBUG [AI Prompt]: {prompt}") # Visible in terminal
-
+            
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 response_format={ "type": "json_object" },
                 messages=[{"role": "user", "content": prompt}]
             )
             
-            # 2. Debug: Log the raw response
             raw_content = response.choices[0].message.content
-            debug_data["raw_ai_response"] = raw_content
-            print(f"DEBUG [AI Response]: {raw_content}") # Visible in terminal
-
             data = json.loads(raw_content)
-            # FIX: The AI output is {"solutions": [...]}, so we extract the list
-            new_solutions_list = data.get("solutions", data)
+            
+            # Extract list safely: handles {"solutions": [...]} or just [...]
+            new_solutions_list = data.get("solutions") if isinstance(data, dict) and "solutions" in data else data
+            if isinstance(new_solutions_list, dict): # Handle case where it's a single object
+                new_solutions_list = [new_solutions_list]
 
             for item in new_solutions_list:
-                # Safely convert 'confidence' to a number
-                raw_confidence = item.get('confidence', 0)
-                
-                # Simple conversion logic for strings like "High" or "Medium"
-                if isinstance(raw_confidence, str):
-                    mapping = {"High": 90, "Medium": 50, "Low": 20}
-                    # Get the mapped number or default to 0 if it's an unrecognized string
-                    processed_confidence = mapping.get(raw_confidence, 0)
-                else:
-                    processed_confidence = raw_confidence
+                raw_conf = item.get('confidence', 0)
+                # Map strings if AI ignores "integer" instruction
+                mapping = {"High": 90, "Medium": 50, "Low": 20}
+                processed_conf = mapping.get(raw_conf, raw_conf) if isinstance(raw_conf, str) else raw_conf
 
+                # CRITICAL: Create the object in the DB
                 Solution.objects.create(
                     issue=issue,
-                    title=item['title'],
-                    description=item['description'],
-                    confidence=processed_confidence,  # Now guaranteed to be a number
+                    title=item.get('title', 'AI Suggestion'),
+                    description=item.get('description', ''),
+                    confidence=processed_conf,
                     is_ai=True,
                     suggested_by=None
                 )
-            ai_solutions = new_solutions_list
-
         except Exception as e:
             print(f"ERROR [AI Generation]: {str(e)}")
-            ai_solutions = []
 
-    user_id = request.session.get('user_id')
-    user = UserDetails.objects.filter(id=user_id).first()
-    
-    # 1. Fetch ALL solutions (Community + AI) in one go
-    # Order by 'is_ai' descending so AI always appears first, then by upvotes
+    # 2. Query ALL solutions ONLY AFTER the generation logic is done
     all_solutions = Solution.objects.filter(issue=issue).order_by('-is_ai', '-upvotes')
 
     user_id = request.session.get('user_id')
@@ -303,9 +277,10 @@ def issue_details_view(request, issue_id):
     
     return render(request, 'Issue_Details_View.html', {
         'issue': issue,
-        'solutions': all_solutions, # Pass the combined list
+        'solutions': all_solutions,
         'user': user,
     })
+
 
 def suggest_solution(request, issue_id):
     issue = get_object_or_404(Issue, id=issue_id)
